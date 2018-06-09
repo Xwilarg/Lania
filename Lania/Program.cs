@@ -77,10 +77,30 @@ namespace Lania
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
         {
+            try
+            {
+                ulong guildId = (chan as ITextChannel).GuildId;
+                if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat"))
+                {
+                    string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat");
+                    IUserMessage msg = (await client.GetGuild(Convert.ToUInt64(content[0])).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
+                    string[] guilds = msg.Content.Split('#');
+                    int id = Convert.ToInt32(content[3]) + 1;
+                    guilds[id] += react.Emote.Name;
+                    string finalStr = guilds[0];
+                    for (int i = 1; i < guilds.Length; i++)
+                        finalStr += "#" + guilds[i];
+                    await msg.ModifyAsync(x => x.Content = finalStr);
+                }
+            }
+            catch (Exception e)
+            {
+                await   chan.SendMessageAsync(e.Message);
+            }
         }
+
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
         {
-
         }
 
         private async Task LeaveGuild(SocketGuild guild)
