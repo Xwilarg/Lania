@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Lania
@@ -21,6 +22,9 @@ namespace Lania
         private readonly CommandService commands = new CommandService();
         public static Program p;
         public Random rand;
+
+        private int commandReceived;
+        private string lastHourSent;
 
         private Program()
         {
@@ -37,6 +41,18 @@ namespace Lania
             p = this;
             rand = new Random();
 
+            lastHourSent = DateTime.Now.ToString("HH");
+            if (File.Exists("Saves/CommandReceived.dat"))
+            {
+                string[] content = File.ReadAllLines("Saves/CommandReceived.dat");
+                if (content[1] == lastHourSent)
+                    commandReceived = Convert.ToInt32(content[0]);
+                else
+                    commandReceived = 0;
+            }
+            else
+                commandReceived = 0;
+
             await commands.AddModuleAsync<CommunicationModule>();
             await commands.AddModuleAsync<GateModule>();
 
@@ -45,6 +61,14 @@ namespace Lania
 
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
             await client.StartAsync();
+
+            var task = Task.Run(async () => {
+                for (;;)
+                {
+                    await Task.Delay(60000);
+                    UpdateStatus();
+                }
+            });
 
             await Task.Delay(-1);
         }
@@ -96,8 +120,39 @@ namespace Lania
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {
                 var context = new SocketCommandContext(client, msg);
-                var result = await commands.ExecuteAsync(context, pos);
+                IResult result = await commands.ExecuteAsync(context, pos);
+                if (result.IsSuccess && !context.User.IsBot)
+                {
+                    commandReceived++;
+                    File.WriteAllText("Saves/CommandReceived.dat", commandReceived + Environment.NewLine + lastHourSent);
+                }
             }
+        }
+
+        private async void UpdateStatus()
+        {
+            HttpClient httpClient = new HttpClient();
+            var values = new Dictionary<string, string> {
+                           { "token", File.ReadAllLines("Keys/websiteToken.dat")[1] },
+                           { "name", "Lania" }
+                        };
+            if (lastHourSent != DateTime.Now.ToString("HH"))
+            {
+                lastHourSent = DateTime.Now.ToString("HH");
+                commandReceived = 0;
+            }
+            values.Add("serverCount", client.Guilds.Count.ToString());
+            values.Add("nbMsgs", commandReceived.ToString());
+            FormUrlEncodedContent content = new FormUrlEncodedContent(values);
+
+            try
+            {
+                await httpClient.PostAsync(File.ReadAllLines("Keys/websiteToken.dat")[0], content);
+            }
+            catch (HttpRequestException)
+            { }
+            catch (TaskCanceledException)
+            { }
         }
 
         private Task Log(LogMessage msg)
