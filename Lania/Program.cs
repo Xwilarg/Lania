@@ -58,6 +58,8 @@ namespace Lania
 
             client.MessageReceived += HandleCommandAsync;
             client.LeftGuild += LeaveGuild;
+            client.ReactionAdded += ReactionAdded;
+            client.ReactionRemoved += ReactionRemoved;
 
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
             await client.StartAsync();
@@ -73,17 +75,43 @@ namespace Lania
             await Task.Delay(-1);
         }
 
+        private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
+        {
+        }
+        private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
+        {
+
+        }
+
         private async Task LeaveGuild(SocketGuild guild)
         {
             GateModule.Close(guild.Id);
+        }
+
+        public struct ImageData
+        {
+            public ImageData(ulong hostGuild, ulong hostChannel, ulong hostMessage, ulong destGuild, ulong destMessage)
+            {
+                this.hostGuild = hostGuild;
+                this.hostChannel = hostChannel;
+                this.hostMessage = hostMessage;
+                this.destGuild = destGuild;
+                this.destMessage = destMessage;
+            }
+
+            public ulong hostGuild;
+            public ulong hostChannel;
+            public ulong hostMessage;
+            public ulong destGuild;
+            public ulong destMessage;
         }
 
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var msg = arg as SocketUserMessage;
             if (msg == null || arg.Author.Id == Sentences.myId) return;
-            if (msg.Attachments.Count > 0 && File.Exists("Saves/" + (arg.Channel as ITextChannel).GuildId + ".dat")
-                && File.ReadAllText("Saves/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
+            if (msg.Attachments.Count > 0 && File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
+                && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
             {
                 string url = msg.Attachments.ToArray()[0].Url;
                 string[] fileCut = msg.Attachments.ToArray()[0].Filename.Split('.');
@@ -93,7 +121,7 @@ namespace Lania
                     wc.DownloadFile(url, fileName);
                 }
                 List<string> ids = new List<string>();
-                foreach (string f in Directory.GetFiles("Saves"))
+                foreach (string f in Directory.GetFiles("Saves/Guilds"))
                 {
                     FileInfo fi = new FileInfo(f);
                     if (fi.Name.Split('.')[0] == (arg.Channel as ITextChannel).GuildId.ToString())
@@ -104,15 +132,29 @@ namespace Lania
                         File.Delete(f);
                 }
                 List<ITextChannel> chans = new List<ITextChannel>();
-                for (int i = 0; i < 3 && ids.Count > 0; i++)
+                int i = 0;
+                for (; i < 3 && ids.Count > 0; i++)
                 {
                     int nb = rand.Next(ids.Count);
-                    chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/" + ids[nb] + ".dat"))) as ITextChannel);
+                    chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))) as ITextChannel);
                     ids.RemoveAt(nb);
                 }
+                string finalStr = "Your file was sent to " + i + " guilds:";
+                for (int y = 0; y < i; y++)
+                    finalStr += Environment.NewLine + "**#" + (y + 1) + ":**";
+                ulong msgId = (await arg.Channel.SendMessageAsync(finalStr)).Id;
+                List<ImageData> datas = new List<ImageData>();
                 foreach (ITextChannel chan in chans)
                 {
-                    await chan.SendFileAsync(fileName);
+                    datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendFileAsync(fileName)).Id));
+                }
+                int counter = 0;
+                foreach (ImageData data in datas)
+                {
+                    if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
+                        Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
+                    File.WriteAllText("Saves/Guilds/" + data.destGuild  + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
+                    counter++;
                 }
                 File.Delete(fileName);
             }

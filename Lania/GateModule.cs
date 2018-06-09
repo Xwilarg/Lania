@@ -9,7 +9,9 @@ namespace Lania
         [Command("Open gate"), Summary("Open the image gate")]
         public async Task OpenGate()
         {
-            File.WriteAllText("Saves/" + Context.Guild.Id + ".dat", Context.Channel.Id.ToString());
+            if (!Directory.Exists("Saves/Guilds"))
+                Directory.CreateDirectory("Saves/Guilds");
+            File.WriteAllText("Saves/Guilds/" + Context.Guild.Id + ".dat", Context.Channel.Id.ToString());
             await ReplyAsync(Sentences.gateOpened);
         }
 
@@ -24,9 +26,9 @@ namespace Lania
 
         public static bool Close(ulong guildId)
         {
-            if (File.Exists("Saves/" + guildId + ".dat"))
+            if (File.Exists("Saves/Guilds/" + guildId + ".dat"))
             {
-                File.Delete("Saves/" + guildId + ".dat");
+                File.Delete("Saves/Guilds/" + guildId + ".dat");
                 return (true);
             }
             return (false);
