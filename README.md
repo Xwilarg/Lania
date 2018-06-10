@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Xwilarg/Lania.svg?branch=master)](https://travis-ci.org/Xwilarg/Lania)<br/>
+
 # Lania
 
 This bot allow you to open a 'gate', every images you send in the channel where the gate is open are sent to 3 random guilds.<br/>
