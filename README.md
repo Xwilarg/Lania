@@ -8,4 +8,4 @@ You can also receive image by the gate, people will then see the reactions you a
 
 Open gate: Open the gate in the current channel<br/>
 Close gate: Close the gate<br/>
-Stats gate: Display what emotes did you received the most<br/>
+Stats gate: Display what emotes you received the most<br/>
