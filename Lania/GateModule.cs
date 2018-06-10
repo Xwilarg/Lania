@@ -9,16 +9,23 @@ namespace Lania
         [Command("Open gate"), Summary("Open the image gate")]
         public async Task OpenGate()
         {
-            if (!Directory.Exists("Saves/Guilds"))
-                Directory.CreateDirectory("Saves/Guilds");
-            File.WriteAllText("Saves/Guilds/" + Context.Guild.Id + ".dat", Context.Channel.Id.ToString());
-            await ReplyAsync(Sentences.gateOpened);
+            if (Context.Guild.OwnerId != Context.User.Id)
+                await ReplyAsync(Sentences.onlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
+            else
+            {
+                if (!Directory.Exists("Saves/Guilds"))
+                    Directory.CreateDirectory("Saves/Guilds");
+                File.WriteAllText("Saves/Guilds/" + Context.Guild.Id + ".dat", Context.Channel.Id.ToString());
+                await ReplyAsync(Sentences.gateOpened);
+            }
         }
 
         [Command("Close gate"), Summary("Close the image gate")]
         public async Task CloseGate()
         {
-            if (Close(Context.Guild.Id))
+            if (Context.Guild.OwnerId != Context.User.Id)
+                await ReplyAsync(Sentences.onlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
+            else if (Close(Context.Guild.Id))
                 await ReplyAsync(Sentences.gateClosed);
             else
                 await ReplyAsync(Sentences.noGate);

@@ -158,11 +158,19 @@ namespace Lania
             public ulong destMessage;
         }
 
+        private bool IsImage(string fileName)
+        {
+            string[] file = fileName.Split('.');
+            string extension = file[file.Length - 1];
+            return (extension == "jpg" || extension == "jpeg" || extension == "png"
+                || extension == "gif");
+        }
+
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var msg = arg as SocketUserMessage;
             if (msg == null || arg.Author.Id == Sentences.myId) return;
-            if (msg.Attachments.Count > 0 && File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
+            if (msg.Attachments.Count > 0 && IsImage(msg.Attachments.ToArray()[0].Filename) && File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
             {
                 string url = msg.Attachments.ToArray()[0].Url;
