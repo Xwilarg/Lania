@@ -75,7 +75,7 @@ namespace Lania
             await Task.Delay(-1);
         }
 
-        private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
+        private async Task ManageReaction(bool addReaction, ISocketMessageChannel chan, SocketReaction react)
         {
             ulong guildId = (chan as ITextChannel).GuildId;
             if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat"))
@@ -103,15 +103,18 @@ namespace Lania
                             string[] emote = s.Split(' ');
                             if (emote[0] == emoteName)
                             {
-                                finalStr += emoteName + "x" + (Convert.ToInt32(emote[1].Substring(1, emote[1].Length - 1)) + 1) + Environment.NewLine;
+                                int newNb = Convert.ToInt32(emote[1].Substring(1, emote[1].Length - 1)) + ((addReaction) ? (1) : (-1));
+                                if (newNb > 0)
+                                    finalStr += emoteName + " x" + newNb + Environment.NewLine;
                                 found = true;
-                                break;
                             }
                             else
                                 finalStr += s + Environment.NewLine;
                         }
                         if (!found)
-                            finalStr += emoteName + " " + "x1" + Environment.NewLine;
+                            finalStr += emoteName + " x1" + Environment.NewLine;
+                        if (finalStr == "")
+                            finalStr = "(Nothing yet)";
                         embed.AddField(field.Name, finalStr);
                     }
                     else
@@ -122,8 +125,14 @@ namespace Lania
             }
         }
 
+        private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
+        {
+            await ManageReaction(true, chan, react);
+        }
+
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
         {
+            await ManageReaction(false, chan, react);
         }
 
         private async Task LeaveGuild(SocketGuild guild)
