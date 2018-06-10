@@ -77,25 +77,48 @@ namespace Lania
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
         {
-            try
+            ulong guildId = (chan as ITextChannel).GuildId;
+            if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat"))
             {
-                ulong guildId = (chan as ITextChannel).GuildId;
-                if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat"))
+                string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat");
+                IUserMessage msg = (await client.GetGuild(Convert.ToUInt64(content[0])).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
+                string[] guilds = msg.Content.Split('#');
+                int id = Convert.ToInt32(content[3]);
+                EmbedBuilder embed = new EmbedBuilder()
                 {
-                    string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat");
-                    IUserMessage msg = (await client.GetGuild(Convert.ToUInt64(content[0])).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
-                    string[] guilds = msg.Content.Split('#');
-                    int id = Convert.ToInt32(content[3]) + 1;
-                    guilds[id] += react.Emote.Name;
-                    string finalStr = guilds[0];
-                    for (int i = 1; i < guilds.Length; i++)
-                        finalStr += "#" + guilds[i];
-                    await msg.ModifyAsync(x => x.Content = finalStr);
+                    Description = msg.Embeds.ToArray()[0].Description
+                };
+                int counter = 0;
+                foreach (EmbedField field in msg.Embeds.ToArray()[0].Fields)
+                {
+                    if (counter == id)
+                    {
+                        bool found = false;
+                        string finalStr = "";
+                        string emoteName = (react.Emote.Name.Length == 1) ? (react.Emote.Name) : (":" + react.Emote.Name + ":");
+                        foreach (string s in field.Value.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
+                        {
+                            if (s == "(Nothing yet)")
+                                continue;
+                            string[] emote = s.Split(' ');
+                            if (emote[0] == emoteName)
+                            {
+                                finalStr += emoteName + "x" + (Convert.ToInt32(emote[1].Substring(1, emote[1].Length - 1)) + 1) + Environment.NewLine;
+                                found = true;
+                                break;
+                            }
+                            else
+                                finalStr += s + Environment.NewLine;
+                        }
+                        if (!found)
+                            finalStr += emoteName + " " + "x1" + Environment.NewLine;
+                        embed.AddField(field.Name, finalStr);
+                    }
+                    else
+                        embed.AddField(field.Name, field.Value);
+                    counter++;
                 }
-            }
-            catch (Exception e)
-            {
-                await   chan.SendMessageAsync(e.Message);
+                await msg.ModifyAsync(x => x.Embed = embed.Build());
             }
         }
 
@@ -134,12 +157,6 @@ namespace Lania
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
             {
                 string url = msg.Attachments.ToArray()[0].Url;
-                string[] fileCut = msg.Attachments.ToArray()[0].Filename.Split('.');
-                string fileName = "Image" + DateTime.Now.ToString("hhmmssff") + rand.Next(int.MinValue, int.MaxValue) + "." + fileCut[fileCut.Length - 1];
-                using (WebClient wc = new WebClient())
-                {
-                    wc.DownloadFile(url, fileName);
-                }
                 List<string> ids = new List<string>();
                 foreach (string f in Directory.GetFiles("Saves/Guilds"))
                 {
@@ -159,24 +176,26 @@ namespace Lania
                     chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))) as ITextChannel);
                     ids.RemoveAt(nb);
                 }
-                string finalStr = "Your file was sent to " + i + " guilds:";
+                EmbedBuilder embed = new EmbedBuilder()
+                {
+                    Description = "Your file was sent to " + i + " guilds"
+                };
                 for (int y = 0; y < i; y++)
-                    finalStr += Environment.NewLine + "**#" + (y + 1) + ":**";
-                ulong msgId = (await arg.Channel.SendMessageAsync(finalStr)).Id;
+                    embed.AddField("#" + (y + 1), "(Nothing yet)");
+                ulong msgId = (await arg.Channel.SendMessageAsync("", false, embed.Build())).Id;
                 List<ImageData> datas = new List<ImageData>();
                 foreach (ITextChannel chan in chans)
                 {
-                    datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendFileAsync(fileName)).Id));
+                    datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id));
                 }
                 int counter = 0;
                 foreach (ImageData data in datas)
                 {
                     if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
                         Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
-                    File.WriteAllText("Saves/Guilds/" + data.destGuild  + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
+                    File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
                     counter++;
                 }
-                File.Delete(fileName);
             }
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
