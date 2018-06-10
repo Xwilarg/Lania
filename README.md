@@ -1,2 +1,11 @@
 # Lania
-Lania is a Discord bot than open a gate allowing you to send an image to a random guild
+
+This bot allow you to open a 'gate', every images you send in the channel where the gate is open are sent to 3 random guilds.<br/>
+You then can see what reactions people add on it.<br/>
+You can also receive image by the gate, people will then see the reactions you add on it.<br/>
+
+# Commands
+
+Open gate: Open the gate in the current channel<br/>
+Close gate: Close the gate<br/>
+Stats gate: Display what emotes did you received the most<br/>
