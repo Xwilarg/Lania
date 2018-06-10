@@ -89,13 +89,13 @@ namespace Lania
                     Description = msg.Embeds.ToArray()[0].Description
                 };
                 int counter = 0;
+                string emoteName = (react.Emote.ToString().Length < 4) ? (react.Emote.Name) : (":" + react.Emote.Name + ":");
                 foreach (EmbedField field in msg.Embeds.ToArray()[0].Fields)
                 {
                     if (counter == id)
                     {
                         bool found = false;
                         string finalStr = "";
-                        string emoteName = (react.Emote.Name.Length == 1) ? (react.Emote.Name) : (":" + react.Emote.Name + ":");
                         foreach (string s in field.Value.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
                         {
                             if (s == "(Nothing yet)")
@@ -122,6 +122,17 @@ namespace Lania
                     counter++;
                 }
                 await msg.ModifyAsync(x => x.Embed = embed.Build());
+                if (!Directory.Exists("Saves/Emotes"))
+                    Directory.CreateDirectory("Saves/Emotes");
+                if (!Directory.Exists("Saves/Emotes/" + content[0]))
+                    Directory.CreateDirectory("Saves/Emotes/" + content[0]);
+                if (File.Exists("Saves/Emotes/" + content[0] + "/" + emoteName.Replace(':', '-') + ".dat"))
+                {
+                    string nbStr = (Convert.ToInt32(File.ReadAllText("Saves/Emotes/" + content[0] + "/" + emoteName.Replace(':', '-') + ".dat")) + ((addReaction) ? (1) : (-1))).ToString();
+                    File.WriteAllText("Saves/Emotes/" + content[0] + "/" + emoteName.Replace(':', '-') + ".dat", nbStr);
+                }
+                else
+                    File.WriteAllText("Saves/Emotes/" + content[0] + "/" + emoteName.Replace(':', '-') + ".dat", "1");
             }
         }
 
