@@ -214,7 +214,7 @@ namespace Lania
                     url = GetFirstImage(msg.Content);
                     if (url != null && !IsImage(url))
                         url = null;
-                    else
+                    else if (url != null)
                         url = url.Substring(0, 8) + url.Substring(8, url.Length - 8).Replace("//", "/");
                 }
                 if (url != null)
