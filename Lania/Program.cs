@@ -177,52 +177,87 @@ namespace Lania
                 || extension == "gif");
         }
 
+        public string GetFirstImage(string text)
+        {
+            string[] words = text.Split(' ');
+            foreach (string s in words)
+            {
+                if (s.StartsWith("http://") || s.StartsWith("https://"))
+                {
+                    try
+                    {
+                        WebRequest request = WebRequest.Create(s);
+                        request.Method = "HEAD";
+                        request.GetResponse();
+                        return (s);
+                    }
+                    catch (WebException)
+                    { }
+                }
+            }
+            return (null);
+        }
+
+
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var msg = arg as SocketUserMessage;
             if (msg == null || arg.Author.Id == Sentences.myId) return;
-            if (msg.Attachments.Count > 0 && IsImage(msg.Attachments.ToArray()[0].Filename) && File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
+            if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
             {
-                string url = msg.Attachments.ToArray()[0].Url;
-                List<string> ids = new List<string>();
-                foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                string url = null;
+                if (msg.Attachments.Count > 0 && IsImage(msg.Attachments.ToArray()[0].Filename))
+                    url = msg.Attachments.ToArray()[0].Url;
+                if (url == null)
                 {
-                    FileInfo fi = new FileInfo(f);
-                    if (fi.Name.Split('.')[0] == (arg.Channel as ITextChannel).GuildId.ToString())
-                        ;
-                    else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
-                        ids.Add(fi.Name.Split('.')[0]);
+                    url = GetFirstImage(msg.Content);
+                    if (url != null && !IsImage(url))
+                        url = null;
                     else
-                        File.Delete(f);
+                        url = url.Substring(0, 8) + url.Substring(8, url.Length - 8).Replace("//", "/");
                 }
-                List<ITextChannel> chans = new List<ITextChannel>();
-                int i = 0;
-                for (; i < 3 && ids.Count > 0; i++)
+                if (url != null)
                 {
-                    int nb = rand.Next(ids.Count);
-                    chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))) as ITextChannel);
-                    ids.RemoveAt(nb);
-                }
-                EmbedBuilder embed = new EmbedBuilder()
-                {
-                    Description = "Your file was sent to " + i + " guilds"
-                };
-                for (int y = 0; y < i; y++)
-                    embed.AddField("#" + (y + 1), "(Nothing yet)");
-                ulong msgId = (await arg.Channel.SendMessageAsync("", false, embed.Build())).Id;
-                List<ImageData> datas = new List<ImageData>();
-                foreach (ITextChannel chan in chans)
-                {
-                    datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id));
-                }
-                int counter = 0;
-                foreach (ImageData data in datas)
-                {
-                    if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
-                        Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
-                    File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
-                    counter++;
+                    List<string> ids = new List<string>();
+                    foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                    {
+                        FileInfo fi = new FileInfo(f);
+                        if (fi.Name.Split('.')[0] == (arg.Channel as ITextChannel).GuildId.ToString())
+                            ;
+                        else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
+                            ids.Add(fi.Name.Split('.')[0]);
+                        else
+                            File.Delete(f);
+                    }
+                    List<ITextChannel> chans = new List<ITextChannel>();
+                    int i = 0;
+                    for (; i < 3 && ids.Count > 0; i++)
+                    {
+                        int nb = rand.Next(ids.Count);
+                        chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))) as ITextChannel);
+                        ids.RemoveAt(nb);
+                    }
+                    EmbedBuilder embed = new EmbedBuilder()
+                    {
+                        Description = "Your file was sent to " + i + " guilds"
+                    };
+                    for (int y = 0; y < i; y++)
+                        embed.AddField("#" + (y + 1), "(Nothing yet)");
+                    ulong msgId = (await arg.Channel.SendMessageAsync("", false, embed.Build())).Id;
+                    List<ImageData> datas = new List<ImageData>();
+                    foreach (ITextChannel chan in chans)
+                    {
+                        datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id));
+                    }
+                    int counter = 0;
+                    foreach (ImageData data in datas)
+                    {
+                        if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
+                            Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
+                        File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
+                        counter++;
+                    }
                 }
             }
             int pos = 0;
