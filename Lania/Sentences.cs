@@ -15,7 +15,10 @@ namespace Lania
         public readonly static string noEmote = "You didn't receive any emote yet.";
         public readonly static string myEmotes = "Here are the 10 emotes your received the most:";
         public readonly static string gateOpened = "The gate is open.";
-        public readonly static string gateClosed = "The gate is closed.";
+        public readonly static string gateClosed = "The gate is close.";
         public readonly static string noGate = "The gate isn't open.";
+        public static string gateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
+        public readonly static string noGateHere = "There is no gate open in this guild.";
+        public static string nbGates(string nb) { return ("There are a total of " + nb + " gates opened."); }
     }
 }

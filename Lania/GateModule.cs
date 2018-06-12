@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Lania
 {
+    [Group("Gate")]
     public class GateModule : ModuleBase
     {
-        [Command("Open gate"), Summary("Open the image gate")]
+        [Command("Open"), Summary("Open the image gate")]
         public async Task OpenGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -22,7 +23,7 @@ namespace Lania
             }
         }
 
-        [Command("Close gate"), Summary("Close the image gate")]
+        [Command("Close"), Summary("Close the image gate")]
         public async Task CloseGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -33,7 +34,7 @@ namespace Lania
                 await ReplyAsync(Sentences.noGate);
         }
 
-        [Command("Stats gate"), Summary("Stats about emotes received"), Alias("Stat gate")]
+        [Command("Stats"), Summary("Stats about emotes received")]
         public async Task StatsGate()
         {
             if (Directory.Exists("Saves/Emotes") && Directory.Exists("Saves/Emotes/" + Context.Guild.Id))
@@ -69,6 +70,17 @@ namespace Lania
             }
             else
                 await ReplyAsync(Sentences.noEmote);
+        }
+
+        [Command("Status"), Summary("Get informations about the gate")]
+        public async Task StatusGate()
+        {
+            string finalStr = "";
+            if (File.Exists("Saves/Guilds/" + Context.Guild.Id + ".dat"))
+                finalStr += Sentences.gateChannel("<#" + Context.Channel.Id + ">");
+            else
+                finalStr += Sentences.noGateHere;
+            await ReplyAsync(finalStr + Environment.NewLine + Sentences.nbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
         }
 
         public static bool Close(ulong guildId)
