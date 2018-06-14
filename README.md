@@ -9,6 +9,7 @@ You can also receive image by the gate, people will then see the reactions you a
 
 # Commands
 
-Open gate: Open the gate in the current channel<br/>
-Close gate: Close the gate<br/>
-Stats gate: Display what emotes you received the most<br/>
+Gate open: Open the gate in the current channel<br/>
+Gate close: Close the gate<br/>
+Gate stats: Display what emotes you received the most<br/>
+Gate status: Display where the gate is currently open<br/>

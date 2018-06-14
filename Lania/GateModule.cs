@@ -77,7 +77,7 @@ namespace Lania
         {
             string finalStr = "";
             if (File.Exists("Saves/Guilds/" + Context.Guild.Id + ".dat"))
-                finalStr += Sentences.gateChannel("<#" + Context.Channel.Id + ">");
+                finalStr += Sentences.gateChannel("<#" + File.ReadAllText("Saves/Guilds/" + Context.Guild.Id + ".dat") + ">");
             else
                 finalStr += Sentences.noGateHere;
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.nbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
