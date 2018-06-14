@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Xwilarg/Lania.svg?branch=master)](https://travis-ci.org/Xwilarg/Lania)<br/>
+[![CodeFactor](https://www.codefactor.io/repository/github/xwilarg/lania/badge)](https://www.codefactor.io/repository/github/xwilarg/lania)<br/>
 
 # Lania
 
