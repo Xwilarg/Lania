@@ -7,10 +7,11 @@ namespace Lania
         public readonly static ulong myId = 454742499085254656;
 
         public readonly static string hiStr = "Hi.";
-        public readonly static string help = "You can use the commands 'Open gate' and 'Close gate' to manage it." + Environment.NewLine +
+        public readonly static string help = "You can use the commands 'Gate open' and 'Gate close' to manage it." + Environment.NewLine +
                                             "You will receive images from the game, you can react to them using reactions." + Environment.NewLine +
                                             "You can also send images by posting them on the channel where the gate is open, and see the reactions that people add on them." + Environment.NewLine +
-                                            "Then you can use the command 'Stats gate' to see what reactions you received the most";
+                                            "Then you can use the command 'Gate stats' to see what reactions you received the most" + Environment.NewLine +
+                                            "You can also use 'Gate status' to see the current status of the gate.";
         public static string onlyUser(string user) { return ("Only " + user + " can do this command.");  }
         public readonly static string noEmote = "You didn't receive any emote yet.";
         public readonly static string myEmotes = "Here are the 10 emotes your received the most:";
