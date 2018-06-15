@@ -275,7 +275,7 @@ namespace Lania
                         request.GetResponse();
                         return (s);
                     }
-                    catch (WebException e)
+                    catch (WebException)
                     { }
                 }
             }
