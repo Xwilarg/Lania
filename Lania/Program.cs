@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Lania
 {
-    class Program
+    public class Program
     {
         public static void Main(string[] args)
             => new Program().MainAsync().GetAwaiter().GetResult();
@@ -249,7 +249,7 @@ namespace Lania
         /// Check if a file is an image by it extension
         /// </summary>
         /// <param name="fileName">file name to check</param>
-        private bool IsImage(string fileName)
+        public static bool IsImage(string fileName)
         {
             string[] file = fileName.Split('.');
             string extension = file[file.Length - 1];
