@@ -18,6 +18,8 @@ namespace Lania
         public readonly static string gateOpened = "The gate is open.";
         public readonly static string gateClosed = "The gate is close.";
         public readonly static string noGate = "The gate isn't open.";
+        public readonly static string nsfwImage = "This image was detected as NSFW by our filter, consequently it wasn't send.";
+        public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";
         public static string NbGates(string nb) { return ("There are a total of " + nb + " gates opened."); }

@@ -30,7 +30,7 @@ namespace Lania
             {
                 Color = Color.Purple
             };
-            embed.AddField(Sentences.uptime, Program.TimeSpanToString(DateTime.Now.Subtract(p.startTime), Context.Guild.Id));
+            embed.AddField(Sentences.uptime, Program.TimeSpanToString(DateTime.Now.Subtract(p.startTime)));
             embed.AddField(Sentences.latestVersion, new FileInfo(Assembly.GetEntryAssembly().Location).LastWriteTimeUtc.ToString("dd/MM/yy HH:mm:ss") + " UTC+0", true);
             embed.AddField("GitHub", "https://github.com/Xwilarg/Lania");
             await ReplyAsync("", false, embed.Build());

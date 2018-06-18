@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Google.Cloud.Vision.V1;
 using Microsoft.Extensions.DependencyInjection;
 using SharpRaven;
 using SharpRaven.Data;
@@ -30,7 +31,11 @@ namespace Lania
         private int commandReceived;
         private string lastHourSent;
 
-        RavenClient ravenClient;
+        private Dictionary<ulong, DateTime> timeLastSent;
+        private const int minutesBetweenSend = 2;
+
+        private RavenClient ravenClient;
+        private ImageAnnotatorClient imageClient;
 
         private Program()
         {
@@ -60,6 +65,10 @@ namespace Lania
                 commandReceived = 0;
 
             ravenClient = new RavenClient(File.ReadAllText("Keys/raven.dat"));
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
+            imageClient = ImageAnnotatorClient.Create();
+
+            timeLastSent = new Dictionary<ulong, DateTime>();
 
             await commands.AddModuleAsync<CommunicationModule>();
             await commands.AddModuleAsync<GateModule>();
@@ -310,24 +319,54 @@ namespace Lania
         /// </summary>
         /// <param name="arg">SocketMessage received from HandleCommandAsync</param>
         /// <param name="msg">User message</param>
-        private async Task CheckImageMessage(SocketMessage arg, SocketUserMessage msg)
+        private async Task SendMessageGate(SocketMessage arg, SocketUserMessage msg)
         {
             string url = GetImageUrl(msg);
             if (url != null)
             {
-                List<string> ids = new List<string>();
-                foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                if (await IsSfw(url))
                 {
-                    FileInfo fi = new FileInfo(f);
-                    if (fi.Name.Split('.')[0] == (arg.Channel as ITextChannel).GuildId.ToString())
-                    { }
-                    else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
-                        ids.Add(fi.Name.Split('.')[0]);
+                    ulong guildId = (arg.Channel as ITextChannel).GuildId;
+                    TimeSpan? waitValue = CanSendImage(guildId);
+                    if (waitValue == null)
+                    {
+                        if (timeLastSent.ContainsKey(guildId))
+                            timeLastSent[guildId] = DateTime.Now;
+                        else
+                            timeLastSent.Add(guildId, DateTime.Now);
+                        List<string> ids = new List<string>();
+                        foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                        {
+                            FileInfo fi = new FileInfo(f);
+                            if (fi.Name.Split('.')[0] == guildId.ToString())
+                            { }
+                            else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
+                                ids.Add(fi.Name.Split('.')[0]);
+                            else
+                                File.Delete(f);
+                        }
+                        await SendImageToServer(ids, arg, url);
+                    }
                     else
-                        File.Delete(f);
+                        await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
                 }
-                await SendImageToServer(ids, arg, url);
+                else
+                    await arg.Channel.SendMessageAsync(Sentences.nsfwImage);
             }
+        }
+
+        private async Task<bool> IsSfw(string url)
+        {
+            var image = await Google.Cloud.Vision.V1.Image.FetchFromUriAsync(url);
+            SafeSearchAnnotation response = await imageClient.DetectSafeSearchAsync(image);
+            return ((int)response.Adult < 3 && (int)response.Medical < 3 && (int)response.Violence < 3);
+        }
+
+        private TimeSpan? CanSendImage(ulong guildId)
+        {
+            if (timeLastSent.ContainsKey(guildId))
+                return (timeLastSent[guildId].AddMinutes(minutesBetweenSend).Subtract(DateTime.Now));
+            return (null);
         }
 
         private async Task HandleCommandAsync(SocketMessage arg)
@@ -336,7 +375,7 @@ namespace Lania
             if (msg == null || arg.Author.Id == Sentences.myId) return;
             if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
-                await CheckImageMessage(arg, msg);
+                await SendMessageGate(arg, msg);
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {
@@ -355,7 +394,7 @@ namespace Lania
         /// </summary>
         /// <param name="ts">The TimeSpan to transform</param>
         /// <returns>The string wanted</returns>
-        public static string TimeSpanToString(TimeSpan ts, ulong guildId)
+        public static string TimeSpanToString(TimeSpan ts)
         {
             string finalStr = ts.Seconds + " seconds";
             if (ts.Days > 0)
