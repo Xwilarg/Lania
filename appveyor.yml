@@ -9,5 +9,5 @@ build:
   project: Lania.sln
 
 test_script:
-- OpenCover.Console.exe -register:user -target:"xunit.console.x86.exe" -targetargs:".\Lania-UnitTests\bin\Debug\Lania-UnitTests.dll -noshadow" -filter:"+[LaniaV2*]* -[Lania-UnitTests*]*" -output:".\coverage.xml"
+- OpenCover.Console.exe -register:user -target:"%xunit20%\xunit.console.x86.exe" -targetargs:".\Lania-UnitTests\bin\Debug\Lania-UnitTests.dll -noshadow" -filter:"+[LaniaV2*]* -[Lania-UnitTests*]*" -output:".\coverage.xml"
 - codecov -f "coverage.xml"
