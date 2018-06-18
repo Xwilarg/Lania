@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,7 @@ namespace Lania
         public async Task OpenGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
-                await ReplyAsync(Sentences.onlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
+                await ReplyAsync(Sentences.OnlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
             else
             {
                 if (!Directory.Exists("Saves/Guilds"))
@@ -27,7 +28,7 @@ namespace Lania
         public async Task CloseGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
-                await ReplyAsync(Sentences.onlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
+                await ReplyAsync(Sentences.OnlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
             else if (Close(Context.Guild.Id))
                 await ReplyAsync(Sentences.gateClosed);
             else
@@ -77,10 +78,10 @@ namespace Lania
         {
             string finalStr = "";
             if (File.Exists("Saves/Guilds/" + Context.Guild.Id + ".dat"))
-                finalStr += Sentences.gateChannel("<#" + File.ReadAllText("Saves/Guilds/" + Context.Guild.Id + ".dat") + ">");
+                finalStr += Sentences.GateChannel("<#" + File.ReadAllText("Saves/Guilds/" + Context.Guild.Id + ".dat") + ">");
             else
                 finalStr += Sentences.noGateHere;
-            await ReplyAsync(finalStr + Environment.NewLine + Sentences.nbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
+            await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
         }
 
         public static bool Close(ulong guildId)

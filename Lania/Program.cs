@@ -25,6 +25,8 @@ namespace Lania
         public static Program p;
         public Random rand;
 
+        public DateTime startTime;
+
         private int commandReceived;
         private string lastHourSent;
 
@@ -67,6 +69,7 @@ namespace Lania
             client.ReactionAdded += ReactionAdded;
             client.ReactionRemoved += ReactionRemoved;
 
+            startTime = DateTime.Now;
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
             await client.StartAsync();
 
@@ -345,6 +348,23 @@ namespace Lania
                     File.WriteAllText("Saves/CommandReceived.dat", commandReceived + Environment.NewLine + lastHourSent);
                 }
             }
+        }
+
+        /// <summary>
+        /// Return a string given a TimeSpan
+        /// </summary>
+        /// <param name="ts">The TimeSpan to transform</param>
+        /// <returns>The string wanted</returns>
+        public static string TimeSpanToString(TimeSpan ts, ulong guildId)
+        {
+            string finalStr = ts.Seconds + " seconds";
+            if (ts.Days > 0)
+                finalStr = ts.Days.ToString() + " days, " + ts.Hours.ToString() + " hours, " + ts.Minutes.ToString() + " minutes and " + finalStr;
+            else if (ts.Hours > 0)
+                finalStr = ts.Hours.ToString() + " hours, " +  ts.Minutes.ToString() + " minutes and " + finalStr;
+            else if (ts.Minutes > 0)
+                finalStr = ts.Minutes.ToString() + " minutes and " + finalStr;
+            return (finalStr);
         }
 
         private async void UpdateStatus()
