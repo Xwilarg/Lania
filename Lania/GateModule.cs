@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -81,6 +82,26 @@ namespace Lania
             else
                 finalStr += Sentences.noGateHere;
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
+        }
+
+        [Command("Report"), Summary("Report the last image")]
+        public async Task Report()
+        {
+            if (Directory.Exists("Saves/Guilds/" + Context.Guild.Id) && File.Exists("Saves/Guilds/" + Context.Guild.Id + "/last.dat"))
+            {
+                string[] content = File.ReadAllLines("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
+                File.Delete("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
+                await Program.p.client.GetGuild(Sentences.refGuild).GetTextChannel(Sentences.refChannel).SendMessageAsync(
+                    "", false, new EmbedBuilder {
+                        Color = Color.Red,
+                        Title = "Report of guild " + content[0],
+                        Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
+                    }.Build());
+                await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(x => x.Embed = new EmbedBuilder { Color = Color.Red, Title = "This message was reported" }.Build());
+                await ReplyAsync(Sentences.reportDone);
+            }
+            else
+                await ReplyAsync(Sentences.noReport);
         }
 
         public static bool Close(ulong guildId)

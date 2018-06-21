@@ -4,7 +4,9 @@ namespace Lania
 {
     public static class Sentences
     {
-        public readonly static ulong myId = 454742499085254656;
+        public readonly static ulong myId = Program.p.client.CurrentUser.Id;
+        public readonly static ulong refGuild = 146701031227654144;
+        public readonly static ulong refChannel = 459341718228172811;
 
         public readonly static string hiStr = "Hi.";
         public readonly static string help = "You can use the commands 'Gate open' and 'Gate close' to manage it." + Environment.NewLine +
@@ -19,6 +21,8 @@ namespace Lania
         public readonly static string gateClosed = "The gate is close.";
         public readonly static string noGate = "The gate isn't open.";
         public readonly static string nsfwImage = "This image was detected as NSFW by our filter, consequently it wasn't send.";
+        public readonly static string noReport = "There isn't any image to report.";
+        public readonly static string reportDone = "The last image you received was reported.";
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";

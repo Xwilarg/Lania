@@ -245,7 +245,10 @@ namespace Lania
             List<ImageData> datas = new List<ImageData>();
             foreach (ITextChannel chan in chans)
             {
-                datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id));
+                ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id;
+                datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, msgDest));
+                File.WriteAllText("Saves/Guilds/" + chan.GuildId + "/last.dat", (arg.Channel as ITextChannel).GuildId + Environment.NewLine + url
+                    + Environment.NewLine + chan.Id + Environment.NewLine + msgDest);
             }
             int counter = 0;
             foreach (ImageData data in datas)

@@ -5,7 +5,7 @@ namespace Lania_UnitTests
     public class Program
     {
         [Fact]
-        public void ToKatakana()
+        public void Test()
         {
             Assert.True(Lania.Program.IsImage("test.png"));
         }
