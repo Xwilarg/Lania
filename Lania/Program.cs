@@ -194,12 +194,13 @@ namespace Lania
 
         public struct ImageData
         {
-            public ImageData(ulong hostGuild, ulong hostChannel, ulong hostMessage, ulong destGuild, ulong destMessage)
+            public ImageData(ulong hostGuild, ulong hostChannel, ulong hostMessage, ulong destGuild, ulong destChannel, ulong destMessage)
             {
                 this.hostGuild = hostGuild;
                 this.hostChannel = hostChannel;
                 this.hostMessage = hostMessage;
                 this.destGuild = destGuild;
+                this.destChannel = destChannel;
                 this.destMessage = destMessage;
             }
 
@@ -207,6 +208,7 @@ namespace Lania
             public ulong hostChannel;
             public ulong hostMessage;
             public ulong destGuild;
+            public ulong destChannel;
             public ulong destMessage;
         }
 
@@ -246,9 +248,7 @@ namespace Lania
             foreach (ITextChannel chan in chans)
             {
                 ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id;
-                datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, msgDest));
-                File.WriteAllText("Saves/Guilds/" + chan.GuildId + "/last.dat", (arg.Channel as ITextChannel).GuildId + Environment.NewLine + url
-                    + Environment.NewLine + chan.Id + Environment.NewLine + msgDest);
+                datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, chan.Id, msgDest));
             }
             int counter = 0;
             foreach (ImageData data in datas)
@@ -256,6 +256,8 @@ namespace Lania
                 if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
                     Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
                 File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
+                File.WriteAllText("Saves/Guilds/" + data.destGuild + "/last.dat", arg.Author.Id + Environment.NewLine + url
+                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage);
                 counter++;
             }
         }
@@ -327,34 +329,39 @@ namespace Lania
             string url = GetImageUrl(msg);
             if (url != null)
             {
-                if (await IsSfw(url))
+                if (!GateModule.IsBanned(arg.Author.Id))
                 {
-                    ulong guildId = (arg.Channel as ITextChannel).GuildId;
-                    TimeSpan? waitValue = CanSendImage(guildId);
-                    if (waitValue == null)
+                    if (await IsSfw(url))
                     {
-                        if (timeLastSent.ContainsKey(guildId))
-                            timeLastSent[guildId] = DateTime.Now;
-                        else
-                            timeLastSent.Add(guildId, DateTime.Now);
-                        List<string> ids = new List<string>();
-                        foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                        ulong guildId = (arg.Channel as ITextChannel).GuildId;
+                        TimeSpan? waitValue = CanSendImage(guildId);
+                        if (waitValue == null || waitValue.Value.TotalSeconds < 0)
                         {
-                            FileInfo fi = new FileInfo(f);
-                            if (fi.Name.Split('.')[0] == guildId.ToString())
-                            { }
-                            else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
-                                ids.Add(fi.Name.Split('.')[0]);
+                            if (timeLastSent.ContainsKey(guildId))
+                                timeLastSent[guildId] = DateTime.Now;
                             else
-                                File.Delete(f);
+                                timeLastSent.Add(guildId, DateTime.Now);
+                            List<string> ids = new List<string>();
+                            foreach (string f in Directory.GetFiles("Saves/Guilds"))
+                            {
+                                FileInfo fi = new FileInfo(f);
+                                if (fi.Name.Split('.')[0] == guildId.ToString())
+                                { }
+                                else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
+                                    ids.Add(fi.Name.Split('.')[0]);
+                                else
+                                    File.Delete(f);
+                            }
+                            await SendImageToServer(ids, arg, url);
                         }
-                        await SendImageToServer(ids, arg, url);
+                        else
+                            await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
                     }
                     else
-                        await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
+                        await arg.Channel.SendMessageAsync(Sentences.nsfwImage);
                 }
                 else
-                    await arg.Channel.SendMessageAsync(Sentences.nsfwImage);
+                    await arg.Channel.SendMessageAsync(Sentences.isBannedImage);
             }
         }
 

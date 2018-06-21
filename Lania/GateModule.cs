@@ -1,8 +1,10 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lania
@@ -15,6 +17,8 @@ namespace Lania
         {
             if (Context.Guild.OwnerId != Context.User.Id)
                 await ReplyAsync(Sentences.OnlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
+            else if (IsBanned(Context.User.Id))
+                await ReplyAsync(Sentences.isBanned);
             else
             {
                 if (!Directory.Exists("Saves/Guilds"))
@@ -84,24 +88,79 @@ namespace Lania
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
         }
 
-        [Command("Report"), Summary("Report the last image")]
+        [Command("Report", RunMode = RunMode.Async), Summary("Report the last image")]
         public async Task Report()
-        {
-            if (Directory.Exists("Saves/Guilds/" + Context.Guild.Id) && File.Exists("Saves/Guilds/" + Context.Guild.Id + "/last.dat"))
+        {try
             {
-                string[] content = File.ReadAllLines("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
-                File.Delete("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
-                await Program.p.client.GetGuild(Sentences.refGuild).GetTextChannel(Sentences.refChannel).SendMessageAsync(
-                    "", false, new EmbedBuilder {
-                        Color = Color.Red,
-                        Title = "Report of guild " + content[0],
-                        Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
-                    }.Build());
-                await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(x => x.Embed = new EmbedBuilder { Color = Color.Red, Title = "This message was reported" }.Build());
-                await ReplyAsync(Sentences.reportDone);
+                if (IsBanned(Context.User.Id))
+                    await ReplyAsync(Sentences.isBanned);
+                else if (Directory.Exists("Saves/Guilds/" + Context.Guild.Id) && File.Exists("Saves/Guilds/" + Context.Guild.Id + "/last.dat"))
+                {
+                    string[] content = File.ReadAllLines("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
+                    File.Delete("Saves/Guilds/" + Context.Guild.Id + "/last.dat");
+                    await Program.p.client.GetGuild(Sentences.refGuild).GetTextChannel(Sentences.refChannel).SendMessageAsync(
+                        "", false, new EmbedBuilder
+                        {
+                            Color = Color.Red,
+                            Title = "Report of guild " + content[0],
+                            Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
+                        }.Build());
+                    await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(
+                        x => x.Embed = new EmbedBuilder { Color = Color.Red, Title = "This message was reported" }.Build());
+                    await ReplyAsync(Sentences.reportDone);
+                }
+                else
+                    await ReplyAsync(Sentences.noReport);
+            } catch (Exception e) { await ReplyAsync(e.Message); }
+        }
+
+        [Command("Ban"), Summary("Ban an user from using the gate")]
+        public async Task Ban(string id)
+        {
+            if (Context.User.Id != Sentences.ownerId)
+            {
+                await ReplyAsync(Sentences.OnlyUser(Sentences.ownerName));
+                return;
+            }
+            bool banned = false;
+            if (File.Exists("Saves/ban.dat"))
+            {
+                if (File.ReadAllLines("Saves/ban.dat").Contains(id))
+                    await ReplyAsync(Sentences.alreadyBanned);
+                else
+                {
+                    banned = true;
+                    File.AppendAllText("Saves/ban.dat", Environment.NewLine + id);
+                    await ReplyAsync(Sentences.banned);
+                }
             }
             else
-                await ReplyAsync(Sentences.noReport);
+            {
+                banned = true;
+                File.WriteAllText("Saves/ban.dat", id);
+                await ReplyAsync(Sentences.banned);
+            }
+            int i = 0;
+            bool wasPm = false;
+            foreach (SocketGuild sg in Program.p.client.Guilds)
+            {
+                if (banned && !wasPm)
+                {
+                    SocketGuildUser user = sg.Users.ToList().Find(x => x.Id.ToString() == id);
+                    if (user != null)
+                    {
+                        await user.SendMessageAsync(Sentences.userBanned);
+                        wasPm = true;
+                    }
+                }
+                if (sg.OwnerId.ToString() == id)
+                {
+                    i++;
+                    Close(sg.Id);
+                }
+            }
+            if (i > 0)
+                await ReplyAsync(i + Sentences.gateClosedBan);
         }
 
         public static bool Close(ulong guildId)
@@ -112,6 +171,11 @@ namespace Lania
                 return (true);
             }
             return (false);
+        }
+
+        public static bool IsBanned(ulong guildId)
+        {
+            return (File.Exists("Saves/ban.dat") && File.ReadAllLines("Saves/ban.dat").Contains(guildId.ToString()));
         }
     }
 }
