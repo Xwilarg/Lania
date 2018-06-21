@@ -382,7 +382,7 @@ namespace Lania
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             SocketUserMessage msg = arg as SocketUserMessage;
-            if (msg == null || arg.Author.Id == Sentences.myId) return;
+            if (msg == null || arg.Author.Id == Sentences.myId || arg.Author.IsBot) return;
             if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
                 await SendMessageGate(arg, msg);

@@ -11,11 +11,19 @@ namespace Lania
         public readonly static string ownerName = "Zirk#0001";
 
         public readonly static string hiStr = "Hi.";
-        public readonly static string help = "You can use the commands 'Gate open' and 'Gate close' to manage it." + Environment.NewLine +
-                                            "You will receive images from the game, you can react to them using reactions." + Environment.NewLine +
-                                            "You can also send images by posting them on the channel where the gate is open, and see the reactions that people add on them." + Environment.NewLine +
-                                            "Then you can use the command 'Gate stats' to see what reactions you received the most" + Environment.NewLine +
-                                            "You can also use 'Gate status' to see the current status of the gate.";
+        public readonly static string help = "My role is to create an image gate between guilds." + Environment.NewLine +
+                                            "Once a gate is open in a channel, you can send an image and see the reactions people add to it." + Environment.NewLine +
+                                            "If you receive an image, you can also add reactions to it, people who send it will then see them." + Environment.NewLine + Environment.NewLine +
+                                            "You must only send safe for work pictures (that mean no picture containing nudity, violence, or simply no picture against Discord ToS)." + Environment.NewLine +
+                                            "Any attempt to bypass our filter will result in a permanent ban." + Environment.NewLine + Environment.NewLine +
+                                            "You can use the following commands to interact with the gate:" + Environment.NewLine +
+                                            "**Gate open:** Open the image gate" + Environment.NewLine +
+                                            "**Gate close:** Close the image gate" + Environment.NewLine +
+                                            "**Gate status:** Display where the gate is opened and how many there are" + Environment.NewLine +
+                                            "**Gate stats:** Display how many emotes your received" + Environment.NewLine +
+                                            "**Gate report:** Report the last image you received as inappropriate" + Environment.NewLine +
+                                            "**Infos:** Display various informations about the bot" + Environment.NewLine +
+                                            "**Help:** Display this help";
         public static string OnlyUser(string user) { return ("Only " + user + " can do this command.");  }
         public readonly static string noEmote = "You didn't receive any emote yet.";
         public readonly static string myEmotes = "Here are the 10 emotes your received the most:";
@@ -31,7 +39,7 @@ namespace Lania
         public readonly static string gateClosedBan = " gates were closed.";
         public readonly static string isBanned = "You can't use this command since you were banned.";
         public readonly static string isBannedImage = "You can't send images since you were banned.";
-        public readonly static string userBanned = "You were banned from using the gate because one of your image was considered as not safe for work.";
+        public readonly static string userBanned = "You were banned from using the gate because of the following reason: ";
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";
@@ -39,5 +47,6 @@ namespace Lania
 
         public readonly static string uptime = "Uptime";
         public readonly static string latestVersion = "Latest version";
+        public readonly static string author = "Author";
     }
 }
