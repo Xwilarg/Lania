@@ -216,7 +216,7 @@ namespace Lania
         /// Send the image to the guilds
         /// </summary>
         /// <param name="ids">ids of all guilds available</param>
-        private List<ITextChannel> SendImages(List<string> ids)
+        private List<ITextChannel> SendImages(List<string> ids, bool isNsfw)
         {
             List<ITextChannel> chans = new List<ITextChannel>();
             for (int i = 0; i < 3 && ids.Count > 0; i++)
@@ -236,7 +236,7 @@ namespace Lania
         /// <param name="url">url to image</param>
         private async Task SendImageToServer(List<string> ids, SocketMessage arg, string url)
         {
-            List<ITextChannel> chans = SendImages(ids);
+            List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw);
             EmbedBuilder embed = new EmbedBuilder()
             {
                 Description = "Your file was sent to " + chans.Count + " guilds"
@@ -331,7 +331,8 @@ namespace Lania
             {
                 if (!GateModule.IsBanned(arg.Author.Id))
                 {
-                    if (await IsSfw(url))
+                    bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
+                    if (await IsSfw(url, isNsfw))
                     {
                         ulong guildId = (arg.Channel as ITextChannel).GuildId;
                         TimeSpan? waitValue = CanSendImage(guildId);
@@ -345,30 +346,37 @@ namespace Lania
                             foreach (string f in Directory.GetFiles("Saves/Guilds"))
                             {
                                 FileInfo fi = new FileInfo(f);
+                                SocketGuild guild = client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
+                                ITextChannel chan = (guild != null) ? (guild.GetTextChannel(Convert.ToUInt64(File.ReadAllText(f)))) : (null);
                                 if (fi.Name.Split('.')[0] == guildId.ToString())
                                 { }
-                                else if (client.Guilds.ToList().Any(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0])))
+                                else if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
                                     ids.Add(fi.Name.Split('.')[0]);
-                                else
+                                else if (guild == null)
                                     File.Delete(f);
                             }
-                            await SendImageToServer(ids, arg, url);
+                            if (ids.Count == 0)
+                                await arg.Channel.SendMessageAsync(Sentences.noChan);
+                            else
+                                await SendImageToServer(ids, arg, url);
                         }
                         else
                             await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
                     }
                     else
-                        await arg.Channel.SendMessageAsync(Sentences.nsfwImage);
+                        await arg.Channel.SendMessageAsync(Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
                 }
                 else
                     await arg.Channel.SendMessageAsync(Sentences.isBannedImage);
             }
         }
 
-        private async Task<bool> IsSfw(string url)
+        private async Task<bool> IsSfw(string url, bool isChanNsfw)
         {
             var image = await Google.Cloud.Vision.V1.Image.FetchFromUriAsync(url);
             SafeSearchAnnotation response = await imageClient.DetectSafeSearchAsync(image);
+            if (isChanNsfw)
+                return ((int)response.Medical < 3 && (int)response.Violence < 3);
             return ((int)response.Adult < 3 && (int)response.Medical < 3 && (int)response.Violence < 3);
         }
 
@@ -385,7 +393,7 @@ namespace Lania
             if (msg == null || arg.Author.Id == Sentences.myId || arg.Author.IsBot) return;
             if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
-                await SendMessageGate(arg, msg);
+                _ = Task.Run(async delegate () { await SendMessageGate(arg, msg); });
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {

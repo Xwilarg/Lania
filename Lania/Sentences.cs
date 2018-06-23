@@ -31,6 +31,7 @@ namespace Lania
         public readonly static string gateClosed = "The gate is close.";
         public readonly static string noGate = "The gate isn't open.";
         public readonly static string nsfwImage = "This image was detected as NSFW by our filter, consequently it wasn't send.";
+        public readonly static string wrongNsfw = "Please make note that we only allow nudity in NSFW channels.";
         public readonly static string noReport = "There isn't any image to report.";
         public readonly static string reportDone = "The last image you received was reported.";
         public readonly static string dontExist = "I didn't find any guild with this id.";
@@ -40,6 +41,7 @@ namespace Lania
         public readonly static string isBanned = "You can't use this command since you were banned.";
         public readonly static string isBannedImage = "You can't send images since you were banned.";
         public readonly static string userBanned = "You were banned from using the gate because of the following reason: ";
+        public readonly static string noChan = "There is no channel available to receive your image.";
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";
