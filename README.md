@@ -1,3 +1,4 @@
+[<img src="https://discordbots.org/api/widget/owner/454742499085254656.svg"/>](https://discordbots.org/bot/454742499085254656)<br/>
 [![Build status](https://ci.appveyor.com/api/projects/status/7i239l5qp5u1956v/branch/master?svg=true)](https://ci.appveyor.com/project/Xwilarg/lania/branch/master)<br/>
 [![CodeFactor](https://www.codefactor.io/repository/github/xwilarg/lania/badge)](https://www.codefactor.io/repository/github/xwilarg/lania)<br/>
 
@@ -11,6 +12,13 @@ If you open the gate in a SFW channel you must send only SFW content (that mean 
 The only type of NSFW content allowed in NSFW channels is nudity (as long as it follow Discord ToS)<br/>
 Any attempt to bypass our filter will result in a permanent ban.<br/>
 Please make not that SFW channels can send images to both NSFW and SFW channels but NSFW channels can only send images to others NSFW channels.<br/>
+
+# Useful links
+
+[Official Discord server](https://discordapp.com/invite/H6wMRYV)<br/>
+[Report an issue/Make a suggestion](https://github.com/Xwilarg/Lania/issues)<br/>
+[Invitation link](https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot)<br/>
+[Trello](https://trello.com/b/Ty972cId/lania)<br/>
 
 # Commands
 
