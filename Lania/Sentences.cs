@@ -16,7 +16,8 @@ namespace Lania
                                             "If you receive an image, you can also add reactions to it, people who send it will then see them." + Environment.NewLine + Environment.NewLine +
                                             "If you open the gate in a SFW channel you must send only SFW content (that mean no picture containing nudity, violence, or simply no picture against Discord ToS)." + Environment.NewLine +
                                             "The only type of NSFW content allowed in NSFW channels is nudity (as long as it follow Discord ToS)" + Environment.NewLine +
-                                            "Any attempt to bypass our filter will result in a permanent ban." + Environment.NewLine + Environment.NewLine +
+                                            "Any attempt to bypass our filter will result in a permanent ban." + Environment.NewLine +
+                                            "Please make not that SFW channels can send images to both NSFW and SFW channels but NSFW channels can only send images to others NSFW channels." + Environment.NewLine + Environment.NewLine +
                                             "You can use the following commands to interact with the gate:" + Environment.NewLine +
                                             "**Gate open:** Open the image gate" + Environment.NewLine +
                                             "**Gate close:** Close the image gate" + Environment.NewLine +

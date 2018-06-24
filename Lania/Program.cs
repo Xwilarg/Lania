@@ -194,7 +194,7 @@ namespace Lania
 
         public struct ImageData
         {
-            public ImageData(ulong hostGuild, ulong hostChannel, ulong hostMessage, ulong destGuild, ulong destChannel, ulong destMessage)
+            public ImageData(ulong hostGuild, ulong hostChannel, ulong hostMessage, ulong destGuild, ulong destChannel, ulong destMessage, bool isChanNsfw)
             {
                 this.hostGuild = hostGuild;
                 this.hostChannel = hostChannel;
@@ -202,6 +202,7 @@ namespace Lania
                 this.destGuild = destGuild;
                 this.destChannel = destChannel;
                 this.destMessage = destMessage;
+                this.isChanNsfw = isChanNsfw;
             }
 
             public ulong hostGuild;
@@ -210,6 +211,7 @@ namespace Lania
             public ulong destGuild;
             public ulong destChannel;
             public ulong destMessage;
+            public bool isChanNsfw;
         }
 
         /// <summary>
@@ -248,7 +250,8 @@ namespace Lania
             foreach (ITextChannel chan in chans)
             {
                 ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id;
-                datas.Add(new ImageData((arg.Channel as ITextChannel).GuildId, arg.Channel.Id, msgId, chan.GuildId, chan.Id, msgDest));
+                ITextChannel textChan = (arg.Channel as ITextChannel);
+                datas.Add(new ImageData(textChan.GuildId, arg.Channel.Id, msgId, chan.GuildId, chan.Id, msgDest, textChan.IsNsfw));
             }
             int counter = 0;
             foreach (ImageData data in datas)
@@ -257,7 +260,7 @@ namespace Lania
                     Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
                 File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
                 File.WriteAllText("Saves/Guilds/" + data.destGuild + "/last.dat", arg.Author.Id + Environment.NewLine + url
-                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage);
+                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage + Environment.NewLine + data.isChanNsfw);
                 counter++;
             }
         }

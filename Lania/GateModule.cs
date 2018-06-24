@@ -101,7 +101,7 @@ namespace Lania
                     "", false, new EmbedBuilder
                     {
                         Color = Color.Red,
-                        Title = "Report of user " + content[0] + " by " + Context.User.Id,
+                        Title = "Report of user " + content[0] + " by " + Context.User.Id + ", chan NSFW: " + content[4],
                         Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
                     }.Build());
                 await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(
