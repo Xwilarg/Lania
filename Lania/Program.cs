@@ -322,8 +322,9 @@ namespace Lania
             return (url);
         }
 
-        public static List<string> GetNbChans(ulong guildId, bool isNsfw, out int total)
+        public static List<string> GetNbChans(ulong guildId, bool isNsfw, out int total, out int readAvailable)
         {
+            readAvailable = 0;
             List<string> ids = new List<string>();
             foreach (string f in Directory.GetFiles("Saves/Guilds"))
             {
@@ -336,7 +337,10 @@ namespace Lania
                     ids.Add(fi.Name.Split('.')[0]);
                 else if (guild == null)
                     File.Delete(f);
+                else if (guild != null && chan != null && isNsfw)
+                    readAvailable++;
             }
+            readAvailable += ids.Count;
             total = Directory.GetFiles("Saves/Guilds").Length;
             return (ids);
         }
@@ -364,7 +368,7 @@ namespace Lania
                                 timeLastSent[guildId] = DateTime.Now;
                             else
                                 timeLastSent.Add(guildId, DateTime.Now);
-                            List<string> ids = GetNbChans(guildId, isNsfw, out _);
+                            List<string> ids = GetNbChans(guildId, isNsfw, out _, out _);
                             if (ids.Count == 0)
                                 await arg.Channel.SendMessageAsync(Sentences.noChan);
                             else
