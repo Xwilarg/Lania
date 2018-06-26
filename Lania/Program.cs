@@ -322,6 +322,25 @@ namespace Lania
             return (url);
         }
 
+        public static List<string> GetNbChans(ulong guildId, bool isNsfw, out int total)
+        {
+            List<string> ids = new List<string>();
+            foreach (string f in Directory.GetFiles("Saves/Guilds"))
+            {
+                FileInfo fi = new FileInfo(f);
+                SocketGuild guild = Program.p.client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
+                ITextChannel chan = (guild != null) ? (guild.GetTextChannel(Convert.ToUInt64(File.ReadAllText(f)))) : (null);
+                if (fi.Name.Split('.')[0] == guildId.ToString())
+                { }
+                else if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
+                    ids.Add(fi.Name.Split('.')[0]);
+                else if (guild == null)
+                    File.Delete(f);
+            }
+            total = Directory.GetFiles("Saves/Guilds").Length;
+            return (ids);
+        }
+
         /// <summary>
         /// Check images in message and send them in gate if necessary
         /// </summary>
@@ -345,19 +364,7 @@ namespace Lania
                                 timeLastSent[guildId] = DateTime.Now;
                             else
                                 timeLastSent.Add(guildId, DateTime.Now);
-                            List<string> ids = new List<string>();
-                            foreach (string f in Directory.GetFiles("Saves/Guilds"))
-                            {
-                                FileInfo fi = new FileInfo(f);
-                                SocketGuild guild = client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
-                                ITextChannel chan = (guild != null) ? (guild.GetTextChannel(Convert.ToUInt64(File.ReadAllText(f)))) : (null);
-                                if (fi.Name.Split('.')[0] == guildId.ToString())
-                                { }
-                                else if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
-                                    ids.Add(fi.Name.Split('.')[0]);
-                                else if (guild == null)
-                                    File.Delete(f);
-                            }
+                            List<string> ids = GetNbChans(guildId, isNsfw, out _);
                             if (ids.Count == 0)
                                 await arg.Channel.SendMessageAsync(Sentences.noChan);
                             else

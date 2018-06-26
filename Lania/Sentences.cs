@@ -47,7 +47,7 @@ namespace Lania
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";
-        public static string NbGates(string nb) { return ("There are a total of " + nb + " gates opened."); }
+        public static string NbGates(string nb, string relativeNb) { return ("There are a total of " + nb + " gates opened, " + relativeNb + " are connected with yours."); }
 
         public readonly static string uptime = "Uptime";
         public readonly static string latestVersion = "Latest version";

@@ -85,7 +85,9 @@ namespace Lania
                 finalStr += Sentences.GateChannel("<#" + File.ReadAllText("Saves/Guilds/" + Context.Guild.Id + ".dat") + ">");
             else
                 finalStr += Sentences.noGateHere;
-            await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Directory.GetFiles("Saves/Guilds").Length.ToString()));
+            int total, relative;
+            relative = Program.GetNbChans(Context.Guild.Id, (Context.Channel as ITextChannel).IsNsfw, out total).Count;
+            await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(total.ToString(), relative.ToString()));
         }
 
         [Command("Report", RunMode = RunMode.Async), Summary("Report the last image")]
