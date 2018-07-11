@@ -218,13 +218,28 @@ namespace Lania
         /// Send the image to the guilds
         /// </summary>
         /// <param name="ids">ids of all guilds available</param>
-        private List<ITextChannel> SendImages(List<string> ids, bool isNsfw)
+        private List<ITextChannel> SendImages(List<string> ids, bool isNsfw, ulong guildId, out bool isLast)
         {
             List<ITextChannel> chans = new List<ITextChannel>();
-            for (int i = 0; i < 3 && ids.Count > 0; i++)
+            if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/last.dat"))
+            {
+                string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/last.dat");
+                if (content.Length > 5)
+                {
+                    string guild = content[5];
+                    chans.Add(client.GetGuild(Convert.ToUInt64(guild)).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + guild + ".dat"))));
+                    ids.Remove(guild);
+                    isLast = true;
+                }
+                else
+                    isLast = false;
+            }
+            else
+                isLast = false;
+            for (int i = chans.Count; i < 3 && ids.Count > 0; i++)
             {
                 int nb = rand.Next(ids.Count);
-                chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))) as ITextChannel);
+                chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))));
                 ids.RemoveAt(nb);
             }
             return (chans);
@@ -236,15 +251,16 @@ namespace Lania
         /// <param name="ids">ids of all guilds available</param>
         /// <param name="arg">SocketMessage got by HandleCommandAsync</param>
         /// <param name="url">url to image</param>
-        private async Task SendImageToServer(List<string> ids, SocketMessage arg, string url)
+        private async Task SendImageToServer(List<string> ids, SocketMessage arg, string url, ulong guildId)
         {
-            List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw);
+            bool isLast;
+            List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw, guildId, out isLast);
             EmbedBuilder embed = new EmbedBuilder()
             {
                 Description = "Your file was sent to " + chans.Count + " guilds"
             };
             for (int y = 0; y < chans.Count; y++)
-                embed.AddField("#" + (y + 1), "(Nothing yet)");
+                embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" (Last image from here)") : ("")), "(Nothing yet)");
             ulong msgId = (await arg.Channel.SendMessageAsync("", false, embed.Build())).Id;
             List<ImageData> datas = new List<ImageData>();
             foreach (ITextChannel chan in chans)
@@ -260,7 +276,7 @@ namespace Lania
                     Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
                 File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
                 File.WriteAllText("Saves/Guilds/" + data.destGuild + "/last.dat", arg.Author.Id + Environment.NewLine + url
-                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage + Environment.NewLine + data.isChanNsfw);
+                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage + Environment.NewLine + data.isChanNsfw + Environment.NewLine + data.hostGuild);
                 counter++;
             }
         }
@@ -329,7 +345,7 @@ namespace Lania
             foreach (string f in Directory.GetFiles("Saves/Guilds"))
             {
                 FileInfo fi = new FileInfo(f);
-                SocketGuild guild = Program.p.client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
+                SocketGuild guild = p.client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
                 ITextChannel chan = (guild != null) ? (guild.GetTextChannel(Convert.ToUInt64(File.ReadAllText(f)))) : (null);
                 if (fi.Name.Split('.')[0] == guildId.ToString())
                 { }
@@ -372,7 +388,7 @@ namespace Lania
                             if (ids.Count == 0)
                                 await arg.Channel.SendMessageAsync(Sentences.noChan);
                             else
-                                await SendImageToServer(ids, arg, url);
+                                await SendImageToServer(ids, arg, url, guildId);
                         }
                         else
                             await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
