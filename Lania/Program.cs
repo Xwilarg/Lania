@@ -64,7 +64,10 @@ namespace Lania
             else
                 commandReceived = 0;
 
-            ravenClient = new RavenClient(File.ReadAllText("Keys/raven.dat"));
+            if (File.Exists("Keys/raven.dat"))
+                ravenClient = new RavenClient(File.ReadAllText("Keys/raven.dat"));
+            else
+                ravenClient = null;
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
             imageClient = ImageAnnotatorClient.Create();
 
@@ -82,13 +85,16 @@ namespace Lania
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
             await client.StartAsync();
 
-            var task = Task.Run(async () => {
-                for (;;)
-                {
-                    await Task.Delay(60000);
-                    UpdateStatus();
-                }
-            });
+            if (File.Exists("Keys/websiteToken.dat"))
+            {
+                var task = Task.Run(async () => {
+                    for (;;)
+                    {
+                        await Task.Delay(60000);
+                        UpdateStatus();
+                    }
+                });
+            }
 
             await Task.Delay(-1);
         }
@@ -511,7 +517,10 @@ namespace Lania
 
         private Task LogError(LogMessage msg)
         {
-            ravenClient.Capture(new SentryEvent(msg.Exception));
+            if (ravenClient == null)
+                Log(msg);
+            else
+                ravenClient.Capture(new SentryEvent(msg.Exception));
             return Task.CompletedTask;
         }
     }
