@@ -429,18 +429,24 @@ namespace Lania
             if (msg == null || arg.Author.Id == Sentences.myId || arg.Author.IsBot) return;
             if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
+            {
                 _ = Task.Run(async delegate () { await SendMessageGate(arg, msg); });
+                IncreaseCommandReceived();
+            }
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {
                 var context = new SocketCommandContext(client, msg);
                 IResult result = await commands.ExecuteAsync(context, pos);
-                if (result.IsSuccess && !context.User.IsBot)
-                {
-                    commandReceived++;
-                    File.WriteAllText("Saves/CommandReceived.dat", commandReceived + Environment.NewLine + lastHourSent);
-                }
+                if (result.IsSuccess)
+                    IncreaseCommandReceived();
             }
+        }
+
+        private void IncreaseCommandReceived()
+        {
+            commandReceived++;
+            File.WriteAllText("Saves/CommandReceived.dat", commandReceived + Environment.NewLine + lastHourSent);
         }
 
         /// <summary>
