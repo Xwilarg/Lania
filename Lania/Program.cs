@@ -348,6 +348,12 @@ namespace Lania
         {
             readAvailable = 0;
             List<string> ids = new List<string>();
+            if (!Directory.Exists("Saves/Guilds"))
+            {
+                total = 0;
+                readAvailable = 0;
+                return (ids);
+            }
             foreach (string f in Directory.GetFiles("Saves/Guilds"))
             {
                 FileInfo fi = new FileInfo(f);
@@ -404,6 +410,7 @@ namespace Lania
                 }
                 else
                     await arg.Channel.SendMessageAsync(Sentences.isBannedImage);
+                IncreaseCommandReceived();
             }
         }
 
@@ -429,10 +436,7 @@ namespace Lania
             if (msg == null || arg.Author.Id == Sentences.myId || arg.Author.IsBot) return;
             if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
                 && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
-            {
                 _ = Task.Run(async delegate () { await SendMessageGate(arg, msg); });
-                IncreaseCommandReceived();
-            }
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {
