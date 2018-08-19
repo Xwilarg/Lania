@@ -28,9 +28,6 @@ namespace Lania
 
         public DateTime startTime;
 
-        private int commandReceived;
-        private string lastHourSent;
-
         private Dictionary<ulong, DateTime> timeLastSent;
         private const int minutesBetweenSend = 2;
 
@@ -51,18 +48,6 @@ namespace Lania
         {
             p = this;
             rand = new Random();
-
-            lastHourSent = DateTime.Now.ToString("HH");
-            if (File.Exists("Saves/CommandReceived.dat"))
-            {
-                string[] content = File.ReadAllLines("Saves/CommandReceived.dat");
-                if (content[1] == lastHourSent)
-                    commandReceived = Convert.ToInt32(content[0]);
-                else
-                    commandReceived = 0;
-            }
-            else
-                commandReceived = 0;
 
             if (File.Exists("Keys/raven.dat"))
                 ravenClient = new RavenClient(File.ReadAllText("Keys/raven.dat"));
@@ -410,7 +395,7 @@ namespace Lania
                 }
                 else
                     await arg.Channel.SendMessageAsync(Sentences.isBannedImage);
-                IncreaseCommandReceived();
+                await IncreaseCommandReceived();
             }
         }
 
@@ -443,14 +428,13 @@ namespace Lania
                 var context = new SocketCommandContext(client, msg);
                 IResult result = await commands.ExecuteAsync(context, pos);
                 if (result.IsSuccess)
-                    IncreaseCommandReceived();
+                    await IncreaseCommandReceived();
             }
         }
 
-        private void IncreaseCommandReceived()
+        private async Task IncreaseCommandReceived()
         {
-            commandReceived++;
-            File.WriteAllText("Saves/CommandReceived.dat", commandReceived + Environment.NewLine + lastHourSent);
+            await UpdateElement(new Tuple<string, string>[] { new Tuple<string, string>("nbMsgs", "1") });
         }
 
         /// <summary>
@@ -470,30 +454,34 @@ namespace Lania
             return (finalStr);
         }
 
-        private async void UpdateStatus()
+        private async Task UpdateElement(Tuple<string, string>[] elems)
         {
             HttpClient httpClient = new HttpClient();
             var values = new Dictionary<string, string> {
                            { "token", File.ReadAllLines("Keys/websiteToken.dat")[1] },
-                           { "name", "Lania" }
+                           { "action", "add" },
+                           { "name", "Orthesia" }
                         };
-            if (lastHourSent != DateTime.Now.ToString("HH"))
+            foreach (var elem in elems)
             {
-                lastHourSent = DateTime.Now.ToString("HH");
-                commandReceived = 0;
+                values.Add(elem.Item1, elem.Item2);
             }
-            values.Add("serverCount", client.Guilds.Count.ToString());
-            values.Add("nbMsgs", commandReceived.ToString());
-            FormUrlEncodedContent content = new FormUrlEncodedContent(values);
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Post, File.ReadAllLines("Keys/websiteToken.dat")[0]);
+            msg.Content = new FormUrlEncodedContent(values);
 
             try
             {
-                await httpClient.PostAsync(File.ReadAllLines("Keys/websiteToken.dat")[0], content);
+                await httpClient.SendAsync(msg);
             }
             catch (HttpRequestException)
             { }
             catch (TaskCanceledException)
             { }
+        }
+
+        private async void UpdateStatus()
+        {
+            await UpdateElement(new Tuple<string, string>[] { new Tuple<string, string>("serverCount", client.Guilds.Count.ToString()) });
         }
 
         private Task Log(LogMessage msg)
