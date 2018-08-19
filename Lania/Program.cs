@@ -460,7 +460,7 @@ namespace Lania
             var values = new Dictionary<string, string> {
                            { "token", File.ReadAllLines("Keys/websiteToken.dat")[1] },
                            { "action", "add" },
-                           { "name", "Orthesia" }
+                           { "name", "Lania" }
                         };
             foreach (var elem in elems)
             {
