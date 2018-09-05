@@ -519,6 +519,16 @@ namespace Lania
                 Log(msg);
             else
                 ravenClient.Capture(new SentryEvent(msg.Exception));
+            CommandException ce = msg.Exception as CommandException;
+            if (ce != null)
+            {
+                ce.Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.Red,
+                    Title = msg.Exception.InnerException.GetType().ToString(),
+                    Description = "An error occured while executing last command.\nHere are some details about the error: " + msg.Exception.InnerException.Message
+                }.Build());
+            }
             return Task.CompletedTask;
         }
     }
