@@ -218,9 +218,14 @@ namespace Lania
                 if (content.Length > 5)
                 {
                     string guild = content[5];
-                    chans.Add(client.GetGuild(Convert.ToUInt64(guild)).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + guild + ".dat"))));
-                    ids.Remove(guild);
-                    isLast = true;
+                    if (File.Exists("Saves/Guilds/" + guild + ".dat"))
+                    {
+                        chans.Add(client.GetGuild(Convert.ToUInt64(guild)).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + guild + ".dat"))));
+                        ids.Remove(guild);
+                        isLast = true;
+                    }
+                    else
+                        isLast = false;
                 }
                 else
                     isLast = false;
