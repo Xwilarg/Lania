@@ -1,6 +1,6 @@
 [<img src="https://discordbots.org/api/widget/owner/454742499085254656.svg"/>](https://discordbots.org/bot/454742499085254656)<br/>
 [![Build status](https://ci.appveyor.com/api/projects/status/10nkphyv40a39vmo?svg=true)](https://ci.appveyor.com/project/Xwilarg/lania/branch/master)<br/>
-[![CodeFactor](https://www.codefactor.io/repository/github/xwilarg/lania/badge)](https://www.codefactor.io/repository/github/xwilarg/lania)<br/>
+[![CodeFactor](https://www.codefactor.io/repository/github/xwilarg/lania/badge)](https://www.codefactor.io/repository/github/xwilarg/lania) [![GuardRails badge](https://badges.production.guardrails.io/Xwilarg/Lania.svg)](https://www.guardrails.io)<br/>
 
 # Lania
 
