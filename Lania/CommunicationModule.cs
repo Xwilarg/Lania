@@ -23,6 +23,28 @@ namespace Lania
             await ReplyAsync(Sentences.hiStr);
         }
 
+        [Command("Invite")]
+        public async Task Invite()
+        {
+            await ReplyAsync("<https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot>");
+        }
+
+        [Command("GDPR", RunMode = RunMode.Async)]
+        public async Task Gdpr()
+        {
+            if (Context.User.Id == Context.Guild.OwnerId)
+            {
+                string content = await Program.p.GetDb().GetContent(Context.Guild.Id);
+                if (content == "null")
+                    await ReplyAsync("I didn't store any information about this guild.");
+                else
+                    await ReplyAsync("Here are the informations I have about this guild:" + Environment.NewLine + Environment.NewLine +
+                        content);
+            }
+            else
+                await ReplyAsync("Only the guild owner can do this command");
+        }
+
         [Command("Infos"), Summary("Give informations about the bot"), Alias("Info")]
         public async Task Infos()
         {
@@ -34,6 +56,7 @@ namespace Lania
             embed.AddField(Sentences.uptime, Program.TimeSpanToString(DateTime.Now.Subtract(p.startTime)));
             embed.AddField(Sentences.latestVersion, new FileInfo(Assembly.GetEntryAssembly().Location).LastWriteTimeUtc.ToString("dd/MM/yy HH:mm:ss") + " UTC+0", true);
             embed.AddField("GitHub", "https://github.com/Xwilarg/Lania");
+            embed.AddField("Invitation link", "https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot");
             await ReplyAsync("", false, embed.Build());
         }
     }

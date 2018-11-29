@@ -21,7 +21,6 @@ namespace Lania
             => new Program().MainAsync().GetAwaiter().GetResult();
 
         public readonly DiscordSocketClient client;
-        private readonly IServiceCollection map = new ServiceCollection();
         private readonly CommandService commands = new CommandService();
         public static Program p;
         public Random rand;
@@ -33,6 +32,13 @@ namespace Lania
 
         private RavenClient ravenClient;
         private ImageAnnotatorClient imageClient;
+
+        private Db db;
+
+        public Db GetDb()
+        {
+            return (db);
+        }
 
         private Program()
         {
@@ -46,6 +52,9 @@ namespace Lania
 
         private async Task MainAsync()
         {
+            db = new Db();
+            await db.InitAsync();
+
             p = this;
             rand = new Random();
 

@@ -12,7 +12,7 @@ namespace Lania
     [Group("Gate")]
     public class GateModule : ModuleBase
     {
-        [Command("Open"), Summary("Open the image gate")]
+        [Command("Open", RunMode = RunMode.Async), Summary("Open the image gate")]
         public async Task OpenGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -21,19 +21,17 @@ namespace Lania
                 await ReplyAsync(Sentences.isBanned);
             else
             {
-                if (!Directory.Exists("Saves/Guilds"))
-                    Directory.CreateDirectory("Saves/Guilds");
-                File.WriteAllText("Saves/Guilds/" + Context.Guild.Id + ".dat", Context.Channel.Id.ToString());
+                await Program.p.GetDb().OpenGate(Context.Guild.Id, Context.Channel.Id);
                 await ReplyAsync(Sentences.gateOpened);
             }
         }
 
-        [Command("Close"), Summary("Close the image gate")]
+        [Command("Close", RunMode = RunMode.Async), Summary("Close the image gate")]
         public async Task CloseGate()
         {
             if (Context.Guild.OwnerId != Context.User.Id)
                 await ReplyAsync(Sentences.OnlyUser((await Context.Guild.GetOwnerAsync()).ToString()));
-            else if (Close(Context.Guild.Id))
+            else if (await Close(Context.Guild.Id))
                 await ReplyAsync(Sentences.gateClosed);
             else
                 await ReplyAsync(Sentences.noGate);
@@ -163,14 +161,9 @@ namespace Lania
                 await ReplyAsync(i + Sentences.gateClosedBan);
         }
 
-        public static bool Close(ulong guildId)
+        public static async Task<bool> Close(ulong guildId)
         {
-            if (File.Exists("Saves/Guilds/" + guildId + ".dat"))
-            {
-                File.Delete("Saves/Guilds/" + guildId + ".dat");
-                return (true);
-            }
-            return (false);
+            return (await Program.p.GetDb().CloseGate(guildId));
         }
 
         public static bool IsBanned(ulong guildId)
