@@ -38,10 +38,11 @@ namespace Lania
             {
                 await R.Db(dbName).Table("Guilds").Insert(R.HashMap("id", guildId.ToString())
                    .With("chanId", chanId.ToString())
-                   .With("last", "null")
                    ).RunAsync(conn);
                 await R.Db(dbName).Table("Emotes").Insert(R.HashMap("id", guildId.ToString())).RunAsync(conn);
-                await R.Db(dbName).Table("Images").Insert(R.HashMap("id", guildId.ToString())).RunAsync(conn);
+                await R.Db(dbName).Table("Images").Insert(R.HashMap("id", guildId.ToString())
+                   .With("last", "null")
+                    ).RunAsync(conn);
             }
             else
                 await R.Db(dbName).Table("Guilds").Update(R.HashMap("id", guildId.ToString())
@@ -53,8 +54,6 @@ namespace Lania
         {
             if (await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn))
                 return (false);
-            await R.Db(dbName).Table("Emotes").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
-            await R.Db(dbName).Table("Images").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
             await R.Db(dbName).Table("Guilds").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
             return (true);
         }
@@ -73,12 +72,15 @@ namespace Lania
 
         public async Task SendImage(Program.ImageData data, int counter, string url, ulong authorId)
         {
-            await R.Db(dbName).Table("Guilds").Update(R.HashMap("id", data.destGuild.ToString())
-                .With("last", authorId + "|" + url + "|" + data.destChannel + "|" + data.destMessage + "|" + data.isChanNsfw + "|" + data.hostGuild)
-                   ).RunAsync(conn);
             await R.Db(dbName).Table("Images").Update(R.HashMap("id", data.destGuild.ToString())
+                .With("last", authorId + "|" + url + "|" + data.destChannel + "|" + data.destMessage + "|" + data.isChanNsfw + "|" + data.hostGuild)
                 .With(data.destMessage.ToString(), data.hostGuild + "|" + data.hostChannel + "|" + data.hostMessage + "|" + counter)
                    ).RunAsync(conn);
+        }
+
+        public async Task<string> GetGateChan(ulong guildId)
+        {
+            return ((await R.Db(dbName).Table("Guilds").Get(guildId.ToString()).RunAsync(conn))?.chanId);
         }
 
         public async Task<bool> CompareChannel(ulong guildId, ulong chanId)

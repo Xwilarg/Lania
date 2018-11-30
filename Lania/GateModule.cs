@@ -79,8 +79,9 @@ namespace Lania
         public async Task StatusGate()
         {
             string finalStr = "";
-            if (File.Exists("Saves/Guilds/" + Context.Guild.Id + ".dat"))
-                finalStr += Sentences.GateChannel("<#" + File.ReadAllText("Saves/Guilds/" + Context.Guild.Id + ".dat") + ">");
+            string id = await Program.p.GetDb().GetGateChan(Context.Guild.Id);
+            if (id != null)
+                finalStr += Sentences.GateChannel("<#" + id + ">");
             else
                 finalStr += Sentences.noGateHere;
             int total, relative, read;
