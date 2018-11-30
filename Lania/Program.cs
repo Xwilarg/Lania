@@ -95,9 +95,10 @@ namespace Lania
         private async Task ManageReaction(bool addReaction, ISocketMessageChannel chan, SocketReaction react)
         {
             ulong guildId = (chan as ITextChannel).GuildId;
-            if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat"))
+            string message = await db.GetImage(guildId, react.MessageId);
+            if (message != null)
             {
-                string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/" + react.MessageId + ".dat");
+                string[] content = message.Split('|');
                 IUserMessage msg = (await client.GetGuild(Convert.ToUInt64(content[0])).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
                 string[] guilds = msg.Content.Split('#');
                 int id = Convert.ToInt32(content[3]);
@@ -113,7 +114,7 @@ namespace Lania
                     counter++;
                 }
                 await msg.ModifyAsync(x => x.Embed = embed.Build());
-                SaveEmoteToFile(content[0], emoteName, addReaction);
+                await db.AddReaction(ulong.Parse(content[0]), emoteName, ((addReaction) ? (1) : (-1)));
             }
         }
 
@@ -153,27 +154,6 @@ namespace Lania
                 Name = field.Name,
                 Value = field.Value
             });
-        }
-
-        /// <summary>
-        /// Save emote progress in file
-        /// </summary>
-        /// <param name="guildId">sender guild id</param>
-        /// <param name="emoteName">name of the emote</param>
-        /// <param name="addReaction">should add or remove emote ?</param>
-        private void SaveEmoteToFile(string guildId, string emoteName, bool addReaction)
-        {
-            if (!Directory.Exists("Saves/Emotes"))
-                Directory.CreateDirectory("Saves/Emotes");
-            if (!Directory.Exists("Saves/Emotes/" + guildId))
-                Directory.CreateDirectory("Saves/Emotes/" + guildId);
-            if (File.Exists("Saves/Emotes/" + guildId + "/" + emoteName.Replace(':', '-') + ".dat"))
-            {
-                string nbStr = (Convert.ToInt32(File.ReadAllText("Saves/Emotes/" + guildId + "/" + emoteName.Replace(':', '-') + ".dat")) + ((addReaction) ? (1) : (-1))).ToString();
-                File.WriteAllText("Saves/Emotes/" + guildId + "/" + emoteName.Replace(':', '-') + ".dat", nbStr);
-            }
-            else
-                File.WriteAllText("Saves/Emotes/" + guildId + "/" + emoteName.Replace(':', '-') + ".dat", "1");
         }
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cach, ISocketMessageChannel chan, SocketReaction react)
@@ -220,15 +200,17 @@ namespace Lania
         private List<ITextChannel> SendImages(List<string> ids, bool isNsfw, ulong guildId, out bool isLast)
         {
             List<ITextChannel> chans = new List<ITextChannel>();
-            if (Directory.Exists("Saves/Guilds/" + guildId) && File.Exists("Saves/Guilds/" + guildId + "/last.dat"))
+            string lastcontent = db.GetLast(guildId).GetAwaiter().GetResult();
+            if (lastcontent != null)
             {
-                string[] content = File.ReadAllLines("Saves/Guilds/" + guildId + "/last.dat");
+                string[] content = lastcontent.Split('|');
                 if (content.Length > 5)
                 {
                     string guild = content[5];
-                    if (File.Exists("Saves/Guilds/" + guild + ".dat"))
+                    ulong destGuildId = ulong.Parse(guild);
+                    if (db.DoesGuildExist(destGuildId).GetAwaiter().GetResult())
                     {
-                        chans.Add(client.GetGuild(Convert.ToUInt64(guild)).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + guild + ".dat"))));
+                        chans.Add(client.GetGuild(destGuildId).GetTextChannel(Convert.ToUInt64(db.GetGateChan(destGuildId).GetAwaiter().GetResult())));
                         ids.Remove(guild);
                         isLast = true;
                     }
@@ -243,7 +225,8 @@ namespace Lania
             for (int i = chans.Count; i < 3 && ids.Count > 0; i++)
             {
                 int nb = rand.Next(ids.Count);
-                chans.Add(client.GetGuild(Convert.ToUInt64(ids[nb])).GetTextChannel(Convert.ToUInt64(File.ReadAllText("Saves/Guilds/" + ids[nb] + ".dat"))));
+                ulong destGuildId = ulong.Parse(ids[nb]);
+                chans.Add(client.GetGuild(destGuildId).GetTextChannel(Convert.ToUInt64(db.GetGateChan(destGuildId).GetAwaiter().GetResult())));
                 ids.RemoveAt(nb);
             }
             return (chans);

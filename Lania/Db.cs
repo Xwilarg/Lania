@@ -34,7 +34,7 @@ namespace Lania
 
         public async Task OpenGate(ulong guildId, ulong chanId)
         {
-            if (await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn))
+            if (await DoesGuildExist(guildId))
             {
                 await R.Db(dbName).Table("Guilds").Insert(R.HashMap("id", guildId.ToString())
                    .With("chanId", chanId.ToString())
@@ -52,10 +52,15 @@ namespace Lania
 
         public async Task<bool> CloseGate(ulong guildId)
         {
-            if (await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn))
+            if (await DoesGuildExist(guildId))
                 return (false);
             await R.Db(dbName).Table("Guilds").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
             return (true);
+        }
+
+        public async Task<bool> DoesGuildExist(ulong guildId)
+        {
+            return (!await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn));
         }
 
         public async Task<string> GetContent(ulong guildId)
@@ -110,6 +115,39 @@ namespace Lania
             }
             readAvailable += ids.Count;
             return (ids);
+        }
+
+        public async Task<string> GetLast(ulong guildId)
+        {
+            string last = (await R.Db(dbName).Table("Images").Get(guildId.ToString()).RunAsync(conn))?.last;
+            if (last == "null")
+                return (null);
+            return (last);
+        }
+
+        public async Task<string> GetImage(ulong guildId, ulong messageId)
+        {
+            dynamic json = (await R.Db(dbName).Table("Images").Get(guildId.ToString()).RunAsync(conn));
+            if (json != null)
+                return (json[messageId.ToString()]);
+            return (null);
+        }
+
+        public async Task AddReaction(ulong guildId, string reaction, int nbIncrease)
+        {
+            dynamic json = (await R.Db(dbName).Table("Emotes").Get(guildId.ToString()).RunAsync(conn));
+            string reactionStr = null;
+            if (json != null)
+                reactionStr = json[reaction];
+            int reactionNb = 0;
+            if (reactionStr != null)
+                reactionNb = int.Parse(reactionStr);
+            if (reactionNb + nbIncrease == 0)
+                await R.Db(dbName).Table("Emotes").Get(guildId.ToString()).Replace(x => x.Without(reaction)).RunAsync(conn);
+            else
+                await R.Db(dbName).Table("Emotes").Update(R.HashMap("id", guildId.ToString())
+                    .With(reaction, (reactionNb + nbIncrease).ToString())
+                    ).RunAsync(conn);
         }
 
         private RethinkDB R;
