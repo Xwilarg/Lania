@@ -65,18 +65,6 @@ namespace Lania
             return (!await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn));
         }
 
-        public async Task<string> GetContent(ulong guildId)
-        {
-            return ("**Guilds:**" + Environment.NewLine
-                + JsonConvert.SerializeObject(await R.Db(dbName).Table("Guilds").Get(guildId.ToString()).RunAsync(conn))
-                + Environment.NewLine + Environment.NewLine
-                + "**Emotes:**" + Environment.NewLine
-                + JsonConvert.SerializeObject(await R.Db(dbName).Table("Emotes").Get(guildId.ToString()).RunAsync(conn))
-                + Environment.NewLine + Environment.NewLine
-                + "**Images:**" + Environment.NewLine
-                + JsonConvert.SerializeObject(await R.Db(dbName).Table("Images").Get(guildId.ToString()).RunAsync(conn)));
-        }
-
         public async Task SendImage(Program.ImageData data, int counter, string url, ulong authorId)
         {
             await R.Db(dbName).Table("Images").Update(R.HashMap("id", data.destGuild.ToString())
@@ -159,7 +147,7 @@ namespace Lania
 
         public async Task Ban(string userId, string reason)
         {
-            await R.Db(dbName).Table("Guilds").Update(R.HashMap("id", userId.ToString())
+            await R.Db(dbName).Table("Bans").Update(R.HashMap("id", userId.ToString())
                 .With("reason", reason)
                 ).RunAsync(conn);
         }

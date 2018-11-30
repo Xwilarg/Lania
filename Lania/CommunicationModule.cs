@@ -29,19 +29,6 @@ namespace Lania
             await ReplyAsync("<https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot>");
         }
 
-        [Command("GDPR", RunMode = RunMode.Async)]
-        public async Task Gdpr()
-        {
-            if (Context.User.Id == Context.Guild.OwnerId)
-            {
-                string content = await Program.p.GetDb().GetContent(Context.Guild.Id);
-                await ReplyAsync("Here are the informations I have about this guild:" + Environment.NewLine + Environment.NewLine +
-                    content);
-            }
-            else
-                await ReplyAsync("Only the guild owner can do this command");
-        }
-
         [Command("Infos"), Summary("Give informations about the bot"), Alias("Info")]
         public async Task Infos()
         {
