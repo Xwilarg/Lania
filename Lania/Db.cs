@@ -47,6 +47,11 @@ namespace Lania
             return (JsonConvert.SerializeObject(await R.Db(dbName).Table("Guilds").Get(guildId.ToString()).RunAsync(conn)));
         }
 
+        public async Task<bool> CompareChannel(ulong guildId, ulong chanId)
+        {
+            return ((await R.Db(dbName).Table("Guilds").Get(guildId.ToString()).RunAsync(conn))?.chanId == chanId.ToString());
+        }
+
         private RethinkDB R;
         private Connection conn;
         private string dbName;

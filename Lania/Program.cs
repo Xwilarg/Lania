@@ -2,7 +2,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Google.Cloud.Vision.V1;
-using Microsoft.Extensions.DependencyInjection;
 using SharpRaven;
 using SharpRaven.Data;
 using System;
@@ -189,7 +188,7 @@ namespace Lania
 
         private async Task LeaveGuild(SocketGuild guild)
         {
-            GateModule.Close(guild.Id);
+            await GateModule.Close(guild.Id);
         }
 
         public struct ImageData
@@ -433,8 +432,7 @@ namespace Lania
         {
             SocketUserMessage msg = arg as SocketUserMessage;
             if (msg == null || arg.Author.Id == Sentences.myId || arg.Author.IsBot) return;
-            if (File.Exists("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat")
-                && File.ReadAllText("Saves/Guilds/" + (arg.Channel as ITextChannel).GuildId + ".dat") == arg.Channel.Id.ToString())
+            if (await db.CompareChannel((arg.Channel as ITextChannel).GuildId, arg.Channel.Id))
                 _ = Task.Run(async delegate () { await SendMessageGate(arg, msg); });
             int pos = 0;
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
