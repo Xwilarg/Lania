@@ -147,7 +147,7 @@ namespace Lania
 
         public async Task Ban(string userId, string reason)
         {
-            await R.Db(dbName).Table("Bans").Update(R.HashMap("id", userId.ToString())
+            await R.Db(dbName).Table("Bans").Insert(R.HashMap("id", userId.ToString())
                 .With("reason", reason)
                 ).RunAsync(conn);
         }
