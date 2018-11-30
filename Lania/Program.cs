@@ -276,11 +276,7 @@ namespace Lania
             int counter = 0;
             foreach (ImageData data in datas)
             {
-                if (!Directory.Exists("Saves/Guilds/" + data.destGuild))
-                    Directory.CreateDirectory("Saves/Guilds/" + data.destGuild);
-                File.WriteAllText("Saves/Guilds/" + data.destGuild + "/" + data.destMessage + ".dat", data.hostGuild + Environment.NewLine + data.hostChannel + Environment.NewLine + data.hostMessage + Environment.NewLine + counter);
-                File.WriteAllText("Saves/Guilds/" + data.destGuild + "/last.dat", arg.Author.Id + Environment.NewLine + url
-                    + Environment.NewLine + data.destChannel + Environment.NewLine + data.destMessage + Environment.NewLine + data.isChanNsfw + Environment.NewLine + data.hostGuild);
+                await db.SendImage(data, counter, url, arg.Author.Id);
                 counter++;
             }
         }
@@ -342,35 +338,6 @@ namespace Lania
             return (url);
         }
 
-        public static List<string> GetNbChans(ulong guildId, bool isNsfw, out int total, out int readAvailable)
-        {
-            readAvailable = 0;
-            List<string> ids = new List<string>();
-            if (!Directory.Exists("Saves/Guilds"))
-            {
-                total = 0;
-                readAvailable = 0;
-                return (ids);
-            }
-            foreach (string f in Directory.GetFiles("Saves/Guilds"))
-            {
-                FileInfo fi = new FileInfo(f);
-                SocketGuild guild = p.client.Guilds.ToList().Find(x => x.Id == Convert.ToUInt64(fi.Name.Split('.')[0]));
-                ITextChannel chan = (guild != null) ? (guild.GetTextChannel(Convert.ToUInt64(File.ReadAllText(f)))) : (null);
-                if (fi.Name.Split('.')[0] == guildId.ToString())
-                { }
-                else if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
-                    ids.Add(fi.Name.Split('.')[0]);
-                else if (guild == null)
-                    File.Delete(f);
-                else if (guild != null && chan != null && isNsfw)
-                    readAvailable++;
-            }
-            readAvailable += ids.Count;
-            total = Directory.GetFiles("Saves/Guilds").Length;
-            return (ids);
-        }
-
         /// <summary>
         /// Check images in message and send them in gate if necessary
         /// </summary>
@@ -394,7 +361,7 @@ namespace Lania
                                 timeLastSent[guildId] = DateTime.Now;
                             else
                                 timeLastSent.Add(guildId, DateTime.Now);
-                            List<string> ids = GetNbChans(guildId, isNsfw, out _, out _);
+                            List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
                             if (ids.Count == 0)
                                 await arg.Channel.SendMessageAsync(Sentences.noChan);
                             else

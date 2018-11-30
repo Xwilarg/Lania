@@ -84,7 +84,7 @@ namespace Lania
             else
                 finalStr += Sentences.noGateHere;
             int total, relative, read;
-            relative = Program.GetNbChans(Context.Guild.Id, (Context.Channel as ITextChannel).IsNsfw, out total, out read).Count;
+            relative = Program.p.GetDb().GetAllGuilds(Context.Guild.Id, (Context.Channel as ITextChannel).IsNsfw, out total, out read).Count;
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(total.ToString(), relative.ToString(), read.ToString()));
         }
 

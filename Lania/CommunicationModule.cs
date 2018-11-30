@@ -35,11 +35,8 @@ namespace Lania
             if (Context.User.Id == Context.Guild.OwnerId)
             {
                 string content = await Program.p.GetDb().GetContent(Context.Guild.Id);
-                if (content == "null")
-                    await ReplyAsync("I didn't store any information about this guild.");
-                else
-                    await ReplyAsync("Here are the informations I have about this guild:" + Environment.NewLine + Environment.NewLine +
-                        content);
+                await ReplyAsync("Here are the informations I have about this guild:" + Environment.NewLine + Environment.NewLine +
+                    content);
             }
             else
                 await ReplyAsync("Only the guild owner can do this command");
