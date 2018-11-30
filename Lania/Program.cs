@@ -254,7 +254,14 @@ namespace Lania
             List<ImageData> datas = new List<ImageData>();
             foreach (ITextChannel chan in chans)
             {
-                ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() { ImageUrl = url, Description = "You received an image though the gate." }.Build())).Id;
+                ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() {
+                    ImageUrl = url,
+                    Description = "You received an image though the gate.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        Text = "Emotes you add are shown to the image sender."
+                    }
+                }.Build())).Id;
                 ITextChannel textChan = (arg.Channel as ITextChannel);
                 datas.Add(new ImageData(textChan.GuildId, arg.Channel.Id, msgId, chan.GuildId, chan.Id, msgDest, textChan.IsNsfw));
             }
