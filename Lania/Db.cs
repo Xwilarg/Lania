@@ -36,7 +36,7 @@ namespace Lania
 
         public async Task OpenGate(ulong guildId, ulong chanId)
         {
-            if (await DoesGuildExist(guildId))
+            if (!await DoesGuildExist(guildId))
             {
                 await R.Db(dbName).Table("Guilds").Insert(R.HashMap("id", guildId.ToString())
                    .With("chanId", chanId.ToString())
@@ -54,7 +54,7 @@ namespace Lania
 
         public async Task<bool> CloseGate(ulong guildId)
         {
-            if (await DoesGuildExist(guildId))
+            if (!await DoesGuildExist(guildId))
                 return (false);
             await R.Db(dbName).Table("Guilds").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
             return (true);

@@ -12,6 +12,7 @@ namespace Lania
 
         public readonly static string hiStr = "Hi.";
         public readonly static string help = "My role is to create an image gate between guilds." + Environment.NewLine +
+                                            "If it's your first time using this feature, go in a channel and do @Lania#2961 Gate open" + Environment.NewLine + Environment.NewLine +
                                             "Once a gate is open in a channel, you can send an image and see the reactions people add to it." + Environment.NewLine +
                                             "If you receive an image, you can also add reactions to it, people who send it will then see them." + Environment.NewLine + Environment.NewLine +
                                             "If you open the gate in a SFW channel you must send only SFW content (that mean no picture containing nudity, violence, or simply no picture against Discord ToS)." + Environment.NewLine +
