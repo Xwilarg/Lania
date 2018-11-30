@@ -30,6 +30,8 @@ namespace Lania
                 await R.Db(dbName).TableCreate("Emotes").RunAsync(conn);
             if (!await R.Db(dbName).TableList().Contains("Images").RunAsync<bool>(conn))
                 await R.Db(dbName).TableCreate("Images").RunAsync(conn);
+            if (!await R.Db(dbName).TableList().Contains("Bans").RunAsync<bool>(conn))
+                await R.Db(dbName).TableCreate("Bans").RunAsync(conn);
         }
 
         public async Task OpenGate(ulong guildId, ulong chanId)
@@ -153,6 +155,25 @@ namespace Lania
                 await R.Db(dbName).Table("Emotes").Update(R.HashMap("id", guildId.ToString())
                     .With(reaction, (reactionNb + nbIncrease).ToString())
                     ).RunAsync(conn);
+        }
+
+        public async Task Ban(string userId, string reason)
+        {
+            await R.Db(dbName).Table("Guilds").Update(R.HashMap("id", userId.ToString())
+                .With("reason", reason)
+                ).RunAsync(conn);
+        }
+
+        public async Task<bool> IsBan(string userId)
+        {
+            return (!await R.Db(dbName).Table("Bans").GetAll(userId.ToString()).Count().Eq(0).RunAsync<bool>(conn));
+        }
+
+        public async Task DeleteLast(ulong guildId)
+        {
+            await R.Db(dbName).Table("Images").Update(R.HashMap("id", guildId.ToString())
+                .With("last", "null")
+                ).RunAsync(conn);
         }
 
         private RethinkDB R;

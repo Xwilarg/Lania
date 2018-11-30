@@ -334,7 +334,7 @@ namespace Lania
             if (url != null)
             {
                 RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.waitMsg);
-                if (!GateModule.IsBanned(arg.Author.Id))
+                if (!await db.IsBan(arg.Author.Id.ToString()))
                 {
                     bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
                     if (await IsSfw(url, isNsfw))
