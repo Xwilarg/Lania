@@ -127,10 +127,15 @@ namespace Lania
 
         public async Task<string> GetImage(ulong guildId, ulong messageId)
         {
-            dynamic json = (await R.Db(dbName).Table("Images").Get(guildId.ToString()).RunAsync(conn));
+            dynamic json = await R.Db(dbName).Table("Images").Get(guildId.ToString()).RunAsync(conn);
             if (json != null)
                 return (json[messageId.ToString()]);
             return (null);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetEmotes(ulong guildId)
+        {
+            return (await R.Db(dbName).Table("Emotes").Get(guildId.ToString()).RunAsync(conn));
         }
 
         public async Task AddReaction(ulong guildId, string reaction, int nbIncrease)

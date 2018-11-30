@@ -44,6 +44,7 @@ namespace Lania
         public readonly static string isBannedImage = "You can't send images since you were banned.";
         public readonly static string userBanned = "You were banned from using the gate because of the following reason: ";
         public readonly static string noChan = "There is no channel available to receive your image.";
+        public readonly static string waitMsg = "Please wait...";
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";

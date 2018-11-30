@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 using Google.Cloud.Vision.V1;
 using SharpRaven;
@@ -238,7 +239,7 @@ namespace Lania
         /// <param name="ids">ids of all guilds available</param>
         /// <param name="arg">SocketMessage got by HandleCommandAsync</param>
         /// <param name="url">url to image</param>
-        private async Task SendImageToServer(List<string> ids, SocketMessage arg, string url, ulong guildId)
+        private async Task SendImageToServer(List<string> ids, SocketMessage arg, string url, ulong guildId, RestUserMessage waitMsg)
         {
             bool isLast;
             List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw, guildId, out isLast);
@@ -248,7 +249,8 @@ namespace Lania
             };
             for (int y = 0; y < chans.Count; y++)
                 embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" (Last image from here)") : ("")), "(Nothing yet)");
-            ulong msgId = (await arg.Channel.SendMessageAsync("", false, embed.Build())).Id;
+            ulong msgId = waitMsg.Id;
+            await waitMsg.ModifyAsync((x) => { x.Content = ""; x.Embed = embed.Build(); });
             List<ImageData> datas = new List<ImageData>();
             foreach (ITextChannel chan in chans)
             {
@@ -331,6 +333,7 @@ namespace Lania
             string url = GetImageUrl(msg);
             if (url != null)
             {
+                RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.waitMsg);
                 if (!GateModule.IsBanned(arg.Author.Id))
                 {
                     bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
@@ -346,18 +349,18 @@ namespace Lania
                                 timeLastSent.Add(guildId, DateTime.Now);
                             List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
                             if (ids.Count == 0)
-                                await arg.Channel.SendMessageAsync(Sentences.noChan);
+                                await waitMsg.ModifyAsync(x => x.Content = Sentences.noChan);
                             else
-                                await SendImageToServer(ids, arg, url, guildId);
+                                await SendImageToServer(ids, arg, url, guildId, waitMsg);
                         }
                         else
-                            await arg.Channel.SendMessageAsync(Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
+                            await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
                     }
                     else
-                        await arg.Channel.SendMessageAsync(Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
+                        await waitMsg.ModifyAsync(x => x.Content = Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
                 }
                 else
-                    await arg.Channel.SendMessageAsync(Sentences.isBannedImage);
+                    await waitMsg.ModifyAsync(x => x.Content = Sentences.isBannedImage);
                 await IncreaseCommandReceived();
             }
         }

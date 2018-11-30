@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Lania
@@ -40,15 +41,15 @@ namespace Lania
         [Command("Stats"), Summary("Stats about emotes received")]
         public async Task StatsGate()
         {
-            if (Directory.Exists("Saves/Emotes") && Directory.Exists("Saves/Emotes/" + Context.Guild.Id))
+            IEnumerable<dynamic> emotes = await Program.p.GetDb().GetEmotes(Context.Guild.Id);
+            if (emotes != null)
             {
                 Dictionary<string, int> allEmotes = new Dictionary<string, int>();
-                foreach (string f in Directory.GetFiles("Saves/Emotes/" + Context.Guild.Id))
+                foreach (var f in emotes)
                 {
-                    FileInfo fi = new FileInfo(f);
-                    int nb = Convert.ToInt32(File.ReadAllText(f));
-                    if (nb > 0)
-                        allEmotes.Add(fi.Name.Split('.')[0].Replace('-', ':'), nb);
+                    Match match = Regex.Match(f.ToString(), "\"([^\"]+)\": \"([0-9]+)\"");
+                    if (match.Groups[1].Value != "id")
+                        allEmotes.Add(match.Groups[1].Value, int.Parse(match.Groups[2].Value));
                 }
                 if (allEmotes.Count == 0)
                     await ReplyAsync(Sentences.noEmote);
