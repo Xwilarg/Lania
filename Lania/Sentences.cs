@@ -54,9 +54,9 @@ namespace Lania
         public static string NothingYet(ulong guildId) { return (Translation.Translate(guildId, "nothingYet")); }
         public static string ImageReceived(ulong guildId) { return (Translation.Translate(guildId, "imageReceived")); }
         public static string EmoteHelp(ulong guildId) { return (Translation.Translate(guildId, "emoteHelp")); }
-        public static string WaitImage(ulong guildId, string duration) { return (Translation.Translate(guildId, "emoteHelp", duration)); }
-        public static string GateChannel(ulong guildId, string channelName) { return (Translation.Translate(guildId, "emoteHelp", channelName)); }
-        public static string NoGateHere(ulong guildId) { return (Translation.Translate(guildId, "emoteHelp")); }
+        public static string WaitImage(ulong guildId, string duration) { return (Translation.Translate(guildId, "waitImage", duration)); }
+        public static string GateChannel(ulong guildId, string channelName) { return (Translation.Translate(guildId, "gateChannel", channelName)); }
+        public static string NoGateHere(ulong guildId) { return (Translation.Translate(guildId, "noGateHere")); }
         public static string NbGates(ulong guildId, string nb, string relativeNb, string readNb) {
             return (Translation.Translate(guildId, "nbGates1", nb) + Environment.NewLine +
                 Translation.Translate(guildId, "nbGates2", relativeNb) + Environment.NewLine +

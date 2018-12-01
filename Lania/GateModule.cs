@@ -84,7 +84,10 @@ namespace Lania
             if (id != null)
                 finalStr += Sentences.GateChannel(Context.Guild.Id, "<#" + id + ">");
             else
-                finalStr += Sentences.NoGateHere(Context.Guild.Id);
+            {
+                await ReplyAsync(Sentences.NoGateHere(Context.Guild.Id));
+                return;
+            }
             int total, relative, read;
             relative = Program.p.GetDb().GetAllGuilds(Context.Guild.Id, (Context.Channel as ITextChannel).IsNsfw, out total, out read).Count;
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Context.Guild.Id, total.ToString(), relative.ToString(), read.ToString()));

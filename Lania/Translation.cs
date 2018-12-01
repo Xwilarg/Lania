@@ -18,7 +18,7 @@ namespace Lania
                 sentence = translations[wordLanguage][word];
             sentence = translations["en"][word];
             for (int i = 0; i < args.Length; i++)
-                sentence.Replace("{" + i + "}", args[i]);
+                sentence = sentence.Replace("{" + i + "}", args[i]);
             return (sentence);
         }
 
