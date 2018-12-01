@@ -29,4 +29,5 @@ Gate status: Display where the gate is opened and how many there are<br/>
 Gate stats: Display how many emotes your received<br/>
 Gate report: Report the last image you received as inappropriate<br/>
 Infos: Display various informations about the bot<br/>
-Help: Display this help<br/>
+Language [language]: Set bot language<br/>
+Help: Display this help
