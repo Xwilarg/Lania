@@ -26,9 +26,9 @@ namespace Lania
         [Command("Language")]
         public async Task Language(string language = null)
         {
-            if (Context.User.Id != Sentences.ownerId)
+            if (Context.User.Id != Context.Guild.OwnerId)
             {
-                await ReplyAsync(Sentences.OnlyUser(Context.Guild.Id, Sentences.ownerName));
+                await ReplyAsync(Sentences.OnlyUser(Context.Guild.Id, (await Context.Guild.GetOwnerAsync()).ToString()));
                 return;
             }
             if (language == null)
