@@ -18,6 +18,7 @@ Please make not that SFW channels can send images to both NSFW and SFW channels 
 [Official Discord server](https://discordapp.com/invite/H6wMRYV)<br/>
 [Report an issue/Make a suggestion](https://github.com/Xwilarg/Lania/issues)<br/>
 [Invitation link](https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot)<br/>
+[Help for the translation](https://github.com/Xwilarg/Lania-translations/)<br/>
 [Trello](https://trello.com/b/Ty972cId/lania)<br/>
 
 # Commands
@@ -28,4 +29,5 @@ Gate status: Display where the gate is opened and how many there are<br/>
 Gate stats: Display how many emotes your received<br/>
 Gate report: Report the last image you received as inappropriate<br/>
 Infos: Display various informations about the bot<br/>
-Help: Display this help<br/>
+Language [language]: Set bot language<br/>
+Help: Display this help
