@@ -26,6 +26,11 @@ namespace Lania
         [Command("Language")]
         public async Task Language(string language = null)
         {
+            if (Context.User.Id != Sentences.ownerId)
+            {
+                await ReplyAsync(Sentences.OnlyUser(Context.Guild.Id, Sentences.ownerName));
+                return;
+            }
             if (language == null)
             {
                 await ReplyAsync(Sentences.LanguageHelp(Context.Guild.Id));
@@ -48,7 +53,11 @@ namespace Lania
             if (key == null)
                 await ReplyAsync(Sentences.InvalidLanguage(Context.Guild.Id));
             else
+            {
+                await Program.p.GetDb().SetLanguage(Context.Guild.Id, key);
+                Program.p.GetLanguages()[Context.Guild.Id] = key;
                 await ReplyAsync(Sentences.LanguageChanged(Context.Guild.Id));
+            }
         }
 
         [Command("Infos"), Summary("Give informations about the bot"), Alias("Info")]

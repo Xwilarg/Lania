@@ -27,8 +27,9 @@ namespace Lania
                 Translation.Translate(guildId, "help13") + Environment.NewLine +
                 Translation.Translate(guildId, "help14") + Environment.NewLine +
                 Translation.Translate(guildId, "help15") + Environment.NewLine +
+                Translation.Translate(guildId, "help16") + Environment.NewLine +
                 Translation.Translate(guildId, "help17") + Environment.NewLine +
-                Translation.Translate(guildId, "help16"));
+                Translation.Translate(guildId, "help18"));
         }
         public static string OnlyUser(ulong guildId, string user) { return (Translation.Translate(guildId, "onlyUser", user)); }
         public static string NoEmote(ulong guildId) { return (Translation.Translate(guildId, "noEmote")); }

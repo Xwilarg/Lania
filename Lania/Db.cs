@@ -171,6 +171,13 @@ namespace Lania
                 ).RunAsync(conn);
         }
 
+        public async Task SetLanguage(ulong guildId, string language)
+        {
+            await R.Db(dbName).Table("Languages").Update(R.HashMap("id", guildId.ToString())
+                .With("language", language)
+                ).RunAsync(conn);
+        }
+
         public async Task<string> GetLanguage(ulong guildId)
         {
             return ((await R.Db(dbName).Table("Languages").Get(guildId.ToString()).RunAsync(conn)).language);
