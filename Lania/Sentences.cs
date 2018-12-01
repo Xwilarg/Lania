@@ -10,62 +10,77 @@ namespace Lania
         public readonly static ulong ownerId = 144851584478740481;
         public readonly static string ownerName = "Zirk#0001";
 
-        public readonly static string hiStr = "Hi.";
-        public readonly static string help = "My role is to create an image gate between guilds." + Environment.NewLine +
-                                            "If it's your first time using this feature, go in a channel and do @Lania#2961 Gate open" + Environment.NewLine + Environment.NewLine +
-                                            "Once a gate is open in a channel, you can send an image and see the reactions people add to it." + Environment.NewLine +
-                                            "If you receive an image, you can also add reactions to it, people who send it will then see them." + Environment.NewLine + Environment.NewLine +
-                                            "If you open the gate in a SFW channel you must send only SFW content (that mean no picture containing nudity, violence, or simply no picture against Discord ToS)." + Environment.NewLine +
-                                            "The only type of NSFW content allowed in NSFW channels is nudity (as long as it follow Discord ToS)" + Environment.NewLine +
-                                            "Any attempt to bypass our filter will result in a permanent ban." + Environment.NewLine +
-                                            "Please make not that SFW channels can send images to both NSFW and SFW channels but NSFW channels can only send images to others NSFW channels." + Environment.NewLine + Environment.NewLine +
-                                            "You can use the following commands to interact with the gate:" + Environment.NewLine +
-                                            "**Gate open:** Open the image gate" + Environment.NewLine +
-                                            "**Gate close:** Close the image gate" + Environment.NewLine +
-                                            "**Gate status:** Display where the gate is opened and how many there are" + Environment.NewLine +
-                                            "**Gate stats:** Display how many emotes your received" + Environment.NewLine +
-                                            "**Gate report:** Report the last image you received as inappropriate" + Environment.NewLine +
-                                            "**Infos:** Display various informations about the bot" + Environment.NewLine +
-                                            "**Help:** Display this help";
-        public static string OnlyUser(string user) { return ("Only " + user + " can do this command.");  }
-        public readonly static string noEmote = "You didn't receive any emote yet.";
-        public readonly static string myEmotes = "Here are the 10 emotes your received the most:";
-        public readonly static string gateOpened = "The gate is open.";
-        public readonly static string gateClosed = "The gate is close.";
-        public readonly static string noGate = "The gate isn't open.";
-        public readonly static string nsfwImage = "This image was detected as NSFW by our filter, consequently it wasn't send.";
-        public readonly static string wrongNsfw = "Please make note that we only allow nudity in NSFW channels.";
-        public readonly static string noReport = "There isn't any image to report.";
-        public readonly static string reportDone = "The last image you received was reported.";
-        public readonly static string dontExist = "I didn't find any guild with this id.";
-        public readonly static string alreadyBanned = "This is was already ban.";
-        public readonly static string banned = "This id is now banned.";
-        public readonly static string gateClosedBan = " gates were closed.";
-        public readonly static string isBanned = "You can't use this command since you were banned.";
-        public readonly static string isBannedImage = "You can't send images since you were banned.";
-        public readonly static string userBanned = "You were banned from using the gate because of the following reason: ";
-        public readonly static string noChan = "There is no channel available to receive your image.";
-        public readonly static string waitMsg = "Please wait...";
-        public readonly static string reported = "This message was reported.";
-        public readonly static string lastImage = "(Last image from here)";
-        public readonly static string nothingYet = "(Nothing yet)";
-        public readonly static string imageReceived = "You received an image though the gate.";
-        public readonly static string emoteHelp = "Emotes you add are shown to the image sender.";
-        public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
-        public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
-        public readonly static string noGateHere = "There is no gate open in this guild.";
-        public static string NbGates(string nb, string relativeNb, string readNb) { return ("There are a total of " + nb + " gates opened." + Environment.NewLine +
-                                                                                            "You can receive images from " + readNb + " of them." + Environment.NewLine +
-                                                                                            "You can send images in " + relativeNb + " of them."); }
+        public static string Help(ulong guildId)
+        {
+            return (Translation.Translate(guildId, "help1") + Environment.NewLine +
+                Translation.Translate(guildId, "help2") + Environment.NewLine + Environment.NewLine +
+                Translation.Translate(guildId, "help3") + Environment.NewLine +
+                Translation.Translate(guildId, "help4") + Environment.NewLine + Environment.NewLine +
+                Translation.Translate(guildId, "help5") + Environment.NewLine +
+                Translation.Translate(guildId, "help6") + Environment.NewLine +
+                Translation.Translate(guildId, "help7") + Environment.NewLine +
+                Translation.Translate(guildId, "help8") + Environment.NewLine + Environment.NewLine +
+                Translation.Translate(guildId, "help9") + Environment.NewLine +
+                Translation.Translate(guildId, "help10") + Environment.NewLine +
+                Translation.Translate(guildId, "help11") + Environment.NewLine +
+                Translation.Translate(guildId, "help12") + Environment.NewLine +
+                Translation.Translate(guildId, "help13") + Environment.NewLine +
+                Translation.Translate(guildId, "help14") + Environment.NewLine +
+                Translation.Translate(guildId, "help15") + Environment.NewLine +
+                Translation.Translate(guildId, "help17") + Environment.NewLine +
+                Translation.Translate(guildId, "help16"));
+        }
+        public static string OnlyUser(ulong guildId, string user) { return (Translation.Translate(guildId, "onlyUser", user)); }
+        public static string NoEmote(ulong guildId) { return (Translation.Translate(guildId, "noEmote")); }
+        public static string MyEmotes(ulong guildId) { return (Translation.Translate(guildId, "myEmotes")); }
+        public static string GateOpened(ulong guildId) { return (Translation.Translate(guildId, "gateOpened")); }
+        public static string GateClosed(ulong guildId) { return (Translation.Translate(guildId, "gateClosed")); }
+        public static string NoGate(ulong guildId) { return (Translation.Translate(guildId, "noGate")); }
+        public static string NsfwImage(ulong guildId) { return (Translation.Translate(guildId, "nsfwImage")); }
+        public static string WrongNsfw(ulong guildId) { return (Translation.Translate(guildId, "wrongNsfw")); }
+        public static string NoReport(ulong guildId) { return (Translation.Translate(guildId, "noReport")); }
+        public static string ReportDone(ulong guildId) { return (Translation.Translate(guildId, "reportDone")); }
+        public static string DontExist(ulong guildId) { return (Translation.Translate(guildId, "dontExist")); }
+        public static string AlreadyBanned(ulong guildId) { return (Translation.Translate(guildId, "alreadyBanned")); }
+        public static string Banned(ulong guildId) { return (Translation.Translate(guildId, "banned")); }
+        public static string GateClosedBan(ulong guildId) { return (Translation.Translate(guildId, "gateClosedBan")); }
+        public static string IsBanned(ulong guildId) { return (Translation.Translate(guildId, "isBanned")); }
+        public static string IsBannedImage(ulong guildId) { return (Translation.Translate(guildId, "isBannedImage")); }
+        public static string UserBanned(ulong guildId) { return (Translation.Translate(guildId, "userBanned")); }
+        public static string NoChan(ulong guildId) { return (Translation.Translate(guildId, "noChan")); }
+        public static string WaitMsg(ulong guildId) { return (Translation.Translate(guildId, "waitMsg")); }
+        public static string Reported(ulong guildId) { return (Translation.Translate(guildId, "reported")); }
+        public static string LastImage(ulong guildId) { return (Translation.Translate(guildId, "lastImage")); }
+        public static string NothingYet(ulong guildId) { return (Translation.Translate(guildId, "nothingYet")); }
+        public static string ImageReceived(ulong guildId) { return (Translation.Translate(guildId, "imageReceived")); }
+        public static string EmoteHelp(ulong guildId) { return (Translation.Translate(guildId, "emoteHelp")); }
+        public static string WaitImage(ulong guildId, string duration) { return (Translation.Translate(guildId, "emoteHelp", duration)); }
+        public static string GateChannel(ulong guildId, string channelName) { return (Translation.Translate(guildId, "emoteHelp", channelName)); }
+        public static string NoGateHere(ulong guildId) { return (Translation.Translate(guildId, "emoteHelp")); }
+        public static string NbGates(ulong guildId, string nb, string relativeNb, string readNb) {
+            return (Translation.Translate(guildId, "nbGates1", nb) + Environment.NewLine +
+                Translation.Translate(guildId, "nbGates2", relativeNb) + Environment.NewLine +
+                Translation.Translate(guildId, "nbGates3", readNb));
+        }
+        public static string FileSent(ulong guildId, string guildCount) { return (Translation.Translate(guildId, "fileSent")); }
+
         public static string FileSent(int guildCount) { return ("Your file was sent to " + guildCount + " guilds."); }
 
-        public readonly static string uptime = "Uptime";
-        public readonly static string latestVersion = "Latest version";
-        public readonly static string author = "Author";
-        public readonly static string invitationLink = "Invitation link";
 
-        public readonly static string dateTimeFormat = "dd/MM/yy HH:mm:ss";
+        public static string Uptime(ulong guildId) { return (Translation.Translate(guildId, "uptime")); }
+        public static string LatestVersion(ulong guildId) { return (Translation.Translate(guildId, "latestVersion")); }
+        public static string Author(ulong guildId) { return (Translation.Translate(guildId, "author")); }
+        public static string InvitationLink(ulong guildId) { return (Translation.Translate(guildId, "invitationLink")); }
+        public static string TimeSeconds(ulong guildId, string seconds) { return (Translation.Translate(guildId, "timeSeconds", seconds)); }
+        public static string TimeMinutes(ulong guildId, string minutes, string seconds) { return (Translation.Translate(guildId, "timeMinutes", minutes, seconds)); }
+        public static string TimeHours(ulong guildId, string hours, string minutes, string seconds) { return (Translation.Translate(guildId, "timeHours", hours, minutes, seconds)); }
+        public static string TimeDays(ulong guildId, string days, string hours, string minutes, string seconds) { return (Translation.Translate(guildId, "timeDays", days, hours, minutes, seconds)); }
+        public static string LanguageHelp(ulong guildId) { return (Translation.Translate(guildId, "languageHelp")); }
+        public static string InvalidLanguage(ulong guildId) { return (Translation.Translate(guildId, "invalidLanguage")); }
+        public static string LanguageChanged(ulong guildId) { return (Translation.Translate(guildId, "languageChanged")); }
 
-        public readonly static string error = "An error occured while executing last command.\nHere are some details about it: ";
+
+        public static string DateTimeFormat(ulong guildId) { return (Translation.Translate(guildId, "dateTimeFormat")); }
+        public static string Error(ulong guildId, string msg) { return (Translation.Translate(guildId, "error", msg)); }
     }
 }

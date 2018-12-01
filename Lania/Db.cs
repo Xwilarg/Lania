@@ -29,6 +29,8 @@ namespace Lania
                 await R.Db(dbName).TableCreate("Images").RunAsync(conn);
             if (!await R.Db(dbName).TableList().Contains("Bans").RunAsync<bool>(conn))
                 await R.Db(dbName).TableCreate("Bans").RunAsync(conn);
+            if (!await R.Db(dbName).TableList().Contains("Languages").RunAsync<bool>(conn))
+                await R.Db(dbName).TableCreate("Languages").RunAsync(conn);
         }
 
         public async Task OpenGate(ulong guildId, ulong chanId)
@@ -55,6 +57,14 @@ namespace Lania
                 return (false);
             await R.Db(dbName).Table("Guilds").Filter(R.HashMap("id", guildId.ToString())).Delete().RunAsync(conn);
             return (true);
+        }
+
+        public async Task InitGuild(ulong guildId)
+        {
+            if (await R.Db(dbName).Table("Languages").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn))
+                await R.Db(dbName).Table("Languages").Insert(R.HashMap("id", guildId.ToString())
+                   .With("language", "en")
+                    ).RunAsync(conn);
         }
 
         public async Task<bool> DoesGuildExist(ulong guildId)
@@ -159,6 +169,11 @@ namespace Lania
             await R.Db(dbName).Table("Images").Update(R.HashMap("id", guildId.ToString())
                 .With("last", "null")
                 ).RunAsync(conn);
+        }
+
+        public async Task<string> GetLanguage(ulong guildId)
+        {
+            return ((await R.Db(dbName).Table("Languages").Get(guildId.ToString()).RunAsync(conn)).language);
         }
 
         private RethinkDB R;

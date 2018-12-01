@@ -35,6 +35,26 @@ namespace Lania
 
         private Db db;
 
+        private Dictionary<string, Dictionary<string, string>> translations;
+        private Dictionary<string, List<string>> translationKeyAlternate;
+
+        public Dictionary<string, Dictionary<string, string>> GetTranslations()
+        {
+            return (translations);
+        }
+
+        public Dictionary<string, List<string>> GetTranslationKeyAlternate()
+        {
+            return (translationKeyAlternate);
+        }
+
+        public Dictionary<ulong, string> GetLanguages()
+        {
+            return (languages);
+        }
+
+        private Dictionary<ulong, string> languages;
+
         public Db GetDb()
         {
             return (db);
@@ -55,6 +75,11 @@ namespace Lania
             db = new Db();
             await db.InitAsync();
 
+            translationKeyAlternate = new Dictionary<string, List<string>>();
+            translations = new Dictionary<string, Dictionary<string, string>>();
+            languages = new Dictionary<ulong, string>();
+            Translation.Init(translations, translationKeyAlternate);
+
             p = this;
             rand = new Random();
 
@@ -74,6 +99,7 @@ namespace Lania
             client.LeftGuild += LeaveGuild;
             client.ReactionAdded += ReactionAdded;
             client.ReactionRemoved += ReactionRemoved;
+            client.GuildAvailable += GuildAvailable;
 
             startTime = DateTime.Now;
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
@@ -91,6 +117,12 @@ namespace Lania
             }
 
             await Task.Delay(-1);
+        }
+
+        private async Task GuildAvailable(SocketGuild arg)
+        {
+            await db.InitGuild(arg.Id);
+            languages.Add(arg.Id, await db.GetLanguage(arg.Id));
         }
 
         private async Task ManageReaction(bool addReaction, ISocketMessageChannel chan, SocketReaction react)
@@ -248,7 +280,7 @@ namespace Lania
                 Description = Sentences.FileSent(chans.Count)
             };
             for (int y = 0; y < chans.Count; y++)
-                embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" " + Sentences.lastImage) : ("")), Sentences.nothingYet);
+                embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" " + Sentences.LastImage(guildId)) : ("")), Sentences.NothingYet(guildId));
             ulong msgId = waitMsg.Id;
             await waitMsg.ModifyAsync((x) => { x.Content = ""; x.Embed = embed.Build(); });
             List<ImageData> datas = new List<ImageData>();
@@ -256,10 +288,10 @@ namespace Lania
             {
                 ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() {
                     ImageUrl = url,
-                    Description = Sentences.imageReceived,
+                    Description = Sentences.ImageReceived(guildId),
                     Footer = new EmbedFooterBuilder()
                     {
-                        Text = Sentences.emoteHelp
+                        Text = Sentences.EmoteHelp(guildId)
                     }
                 }.Build())).Id;
                 ITextChannel textChan = (arg.Channel as ITextChannel);
@@ -268,7 +300,7 @@ namespace Lania
             int counter = 0;
             foreach (ImageData data in datas)
             {
-                await db.SendImage(data, counter, url, arg.Author.Id);
+                await db.SendImage(data, counter, url, guildId);
                 counter++;
             }
         }
@@ -342,13 +374,13 @@ namespace Lania
                 string url = GetImageUrl(msg);
                 if (url != null)
                 {
-                    RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.waitMsg);
+                    ulong guildId = (arg.Channel as ITextChannel).GuildId;
+                    RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.WaitMsg(guildId));
                     if (!await db.IsBan(arg.Author.Id.ToString()))
                     {
                         bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
                         if (await IsSfw(url, isNsfw))
                         {
-                            ulong guildId = (arg.Channel as ITextChannel).GuildId;
                             TimeSpan? waitValue = CanSendImage(guildId);
                             if (waitValue == null || waitValue.Value.TotalSeconds < 0)
                             {
@@ -358,18 +390,18 @@ namespace Lania
                                     timeLastSent.Add(guildId, DateTime.Now);
                                 List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
                                 if (ids.Count == 0)
-                                    await waitMsg.ModifyAsync(x => x.Content = Sentences.noChan);
+                                    await waitMsg.ModifyAsync(x => x.Content = Sentences.NoChan(guildId));
                                 else
                                     await SendImageToServer(ids, arg, url, guildId, waitMsg);
                             }
                             else
-                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
+                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(guildId, TimeSpanToString(waitValue.Value)));
                         }
                         else
-                            await waitMsg.ModifyAsync(x => x.Content = Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
+                            await waitMsg.ModifyAsync(x => x.Content = Sentences.NsfwImage(guildId) + ((isNsfw) ? (" " + Sentences.WrongNsfw(guildId)) : ("")));
                     }
                     else
-                        await waitMsg.ModifyAsync(x => x.Content = Sentences.isBannedImage);
+                        await waitMsg.ModifyAsync(x => x.Content = Sentences.IsBannedImage(guildId));
                     await IncreaseCommandReceived();
                 }
             } catch (Exception e)
@@ -504,7 +536,7 @@ namespace Lania
                 {
                     Color = Color.Red,
                     Title = msg.Exception.InnerException.GetType().ToString(),
-                    Description = Sentences.error + msg.Exception.InnerException.Message
+                    Description = Sentences.Error(ce.Context.Guild.Id, msg.Exception.InnerException.Message)
                 }.Build());
             }
             return Task.CompletedTask;
