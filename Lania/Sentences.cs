@@ -46,15 +46,26 @@ namespace Lania
         public readonly static string userBanned = "You were banned from using the gate because of the following reason: ";
         public readonly static string noChan = "There is no channel available to receive your image.";
         public readonly static string waitMsg = "Please wait...";
+        public readonly static string reported = "This message was reported.";
+        public readonly static string lastImage = "(Last image from here)";
+        public readonly static string nothingYet = "(Nothing yet)";
+        public readonly static string imageReceived = "You received an image though the gate.";
+        public readonly static string emoteHelp = "Emotes you add are shown to the image sender.";
         public static string WaitImage(string duration) { return ("You must wait at least " + duration + " before sending another image."); }
         public static string GateChannel(string channelName) { return ("The gate is open in " + channelName + "."); }
         public readonly static string noGateHere = "There is no gate open in this guild.";
         public static string NbGates(string nb, string relativeNb, string readNb) { return ("There are a total of " + nb + " gates opened." + Environment.NewLine +
                                                                                             "You can receive images from " + readNb + " of them." + Environment.NewLine +
                                                                                             "You can send images in " + relativeNb + " of them."); }
+        public static string FileSent(int guildCount) { return ("Your file was sent to " + guildCount + " guilds."); }
 
         public readonly static string uptime = "Uptime";
         public readonly static string latestVersion = "Latest version";
         public readonly static string author = "Author";
+        public readonly static string invitationLink = "Invitation link";
+
+        public readonly static string dateTimeFormat = "dd/MM/yy HH:mm:ss";
+
+        public readonly static string error = "An error occured while executing last command.\nHere are some details about it: ";
     }
 }

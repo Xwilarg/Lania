@@ -1,10 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using RethinkDb.Driver;
 using RethinkDb.Driver.Net;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

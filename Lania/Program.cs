@@ -245,10 +245,10 @@ namespace Lania
             List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw, guildId, out isLast);
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Description = "Your file was sent to " + chans.Count + " guilds"
+                Description = Sentences.FileSent(chans.Count)
             };
             for (int y = 0; y < chans.Count; y++)
-                embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" (Last image from here)") : ("")), "(Nothing yet)");
+                embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" " + Sentences.lastImage) : ("")), Sentences.nothingYet);
             ulong msgId = waitMsg.Id;
             await waitMsg.ModifyAsync((x) => { x.Content = ""; x.Embed = embed.Build(); });
             List<ImageData> datas = new List<ImageData>();
@@ -256,10 +256,10 @@ namespace Lania
             {
                 ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() {
                     ImageUrl = url,
-                    Description = "You received an image though the gate.",
+                    Description = Sentences.imageReceived,
                     Footer = new EmbedFooterBuilder()
                     {
-                        Text = "Emotes you add are shown to the image sender."
+                        Text = Sentences.emoteHelp
                     }
                 }.Build())).Id;
                 ITextChannel textChan = (arg.Channel as ITextChannel);
@@ -337,38 +337,44 @@ namespace Lania
         /// <param name="msg">User message</param>
         private async Task SendMessageGate(SocketMessage arg, SocketUserMessage msg)
         {
-            string url = GetImageUrl(msg);
-            if (url != null)
+            try
             {
-                RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.waitMsg);
-                if (!await db.IsBan(arg.Author.Id.ToString()))
+                string url = GetImageUrl(msg);
+                if (url != null)
                 {
-                    bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
-                    if (await IsSfw(url, isNsfw))
+                    RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.waitMsg);
+                    if (!await db.IsBan(arg.Author.Id.ToString()))
                     {
-                        ulong guildId = (arg.Channel as ITextChannel).GuildId;
-                        TimeSpan? waitValue = CanSendImage(guildId);
-                        if (waitValue == null || waitValue.Value.TotalSeconds < 0)
+                        bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
+                        if (await IsSfw(url, isNsfw))
                         {
-                            if (timeLastSent.ContainsKey(guildId))
-                                timeLastSent[guildId] = DateTime.Now;
+                            ulong guildId = (arg.Channel as ITextChannel).GuildId;
+                            TimeSpan? waitValue = CanSendImage(guildId);
+                            if (waitValue == null || waitValue.Value.TotalSeconds < 0)
+                            {
+                                if (timeLastSent.ContainsKey(guildId))
+                                    timeLastSent[guildId] = DateTime.Now;
+                                else
+                                    timeLastSent.Add(guildId, DateTime.Now);
+                                List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
+                                if (ids.Count == 0)
+                                    await waitMsg.ModifyAsync(x => x.Content = Sentences.noChan);
+                                else
+                                    await SendImageToServer(ids, arg, url, guildId, waitMsg);
+                            }
                             else
-                                timeLastSent.Add(guildId, DateTime.Now);
-                            List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
-                            if (ids.Count == 0)
-                                await waitMsg.ModifyAsync(x => x.Content = Sentences.noChan);
-                            else
-                                await SendImageToServer(ids, arg, url, guildId, waitMsg);
+                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
                         }
                         else
-                            await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(TimeSpanToString(waitValue.Value)));
+                            await waitMsg.ModifyAsync(x => x.Content = Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
                     }
                     else
-                        await waitMsg.ModifyAsync(x => x.Content = Sentences.nsfwImage + ((isNsfw) ? (" " + Sentences.wrongNsfw) : ("")));
+                        await waitMsg.ModifyAsync(x => x.Content = Sentences.isBannedImage);
+                    await IncreaseCommandReceived();
                 }
-                else
-                    await waitMsg.ModifyAsync(x => x.Content = Sentences.isBannedImage);
-                await IncreaseCommandReceived();
+            } catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -498,7 +504,7 @@ namespace Lania
                 {
                     Color = Color.Red,
                     Title = msg.Exception.InnerException.GetType().ToString(),
-                    Description = "An error occured while executing last command.\nHere are some details about the error: " + msg.Exception.InnerException.Message
+                    Description = Sentences.error + msg.Exception.InnerException.Message
                 }.Build());
             }
             return Task.CompletedTask;

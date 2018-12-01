@@ -108,7 +108,7 @@ namespace Lania
                         Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
                     }.Build());
                 await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(
-                    x => x.Embed = new EmbedBuilder { Color = Color.Red, Title = "This message was reported" }.Build());
+                    x => x.Embed = new EmbedBuilder { Color = Color.Red, Title = Sentences.reported }.Build());
                 await ReplyAsync(Sentences.reportDone);
             }
             else
