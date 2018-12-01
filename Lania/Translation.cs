@@ -17,6 +17,7 @@ namespace Lania
             if (translations[wordLanguage].ContainsKey(word))
                 sentence = translations[wordLanguage][word];
             sentence = translations["en"][word];
+            sentence = sentence.Replace("\\n", "\n");
             for (int i = 0; i < args.Length; i++)
                 sentence = sentence.Replace("{" + i + "}", args[i]);
             return (sentence);

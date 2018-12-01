@@ -104,7 +104,7 @@ namespace Lania
                     if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
                         ids.Add(elem.id.ToString());
                     else if (guild == null)
-                        CloseGate(ulong.Parse(elem.id));
+                        CloseGate(ulong.Parse(elem.id.ToString()));
                     else if (guild != null && chan != null && isNsfw)
                         readAvailable++;
                 }

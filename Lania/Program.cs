@@ -100,6 +100,7 @@ namespace Lania
             client.ReactionAdded += ReactionAdded;
             client.ReactionRemoved += ReactionRemoved;
             client.GuildAvailable += GuildAvailable;
+            client.JoinedGuild += GuildAvailable;
 
             startTime = DateTime.Now;
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
