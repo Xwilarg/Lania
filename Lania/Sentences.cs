@@ -78,7 +78,6 @@ namespace Lania
         public static string InvalidLanguage(ulong guildId) { return (Translation.Translate(guildId, "invalidLanguage")); }
         public static string LanguageChanged(ulong guildId) { return (Translation.Translate(guildId, "languageChanged")); }
 
-
         public static string DateTimeFormat(ulong guildId) { return (Translation.Translate(guildId, "dateTimeFormat")); }
         public static string Error(ulong guildId, string msg) { return (Translation.Translate(guildId, "error", msg)); }
     }
