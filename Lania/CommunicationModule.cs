@@ -68,7 +68,7 @@ namespace Lania
                 Color = Color.Purple
             };
             embed.AddField(Sentences.Author(Context.Guild.Id), "Zirk#0001");
-            embed.AddField(Sentences.Uptime(Context.Guild.Id), Program.TimeSpanToString(DateTime.Now.Subtract(p.startTime)));
+            embed.AddField(Sentences.Uptime(Context.Guild.Id), Program.TimeSpanToString(Context.Guild.Id, DateTime.Now.Subtract(p.startTime)));
             embed.AddField(Sentences.LatestVersion(Context.Guild.Id), new FileInfo(Assembly.GetEntryAssembly().Location).LastWriteTimeUtc.ToString(Sentences.DateTimeFormat(Context.Guild.Id)) + " UTC+0", true);
             embed.AddField("GitHub", "https://github.com/Xwilarg/Lania");
             embed.AddField(Sentences.InvitationLink(Context.Guild.Id), "https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot");

@@ -396,7 +396,7 @@ namespace Lania
                                     await SendImageToServer(ids, arg, url, guildId, waitMsg);
                             }
                             else
-                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(guildId, TimeSpanToString(waitValue.Value)));
+                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(guildId, TimeSpanToString(guildId, waitValue.Value)));
                         }
                         else
                             await waitMsg.ModifyAsync(x => x.Content = Sentences.NsfwImage(guildId) + ((isNsfw) ? (" " + Sentences.WrongNsfw(guildId)) : ("")));
@@ -453,16 +453,15 @@ namespace Lania
         /// </summary>
         /// <param name="ts">The TimeSpan to transform</param>
         /// <returns>The string wanted</returns>
-        public static string TimeSpanToString(TimeSpan ts)
+        public static string TimeSpanToString(ulong guildId, TimeSpan ts)
         {
-            string finalStr = ts.Seconds + " seconds";
             if (ts.Days > 0)
-                finalStr = ts.Days.ToString() + " days, " + ts.Hours.ToString() + " hours, " + ts.Minutes.ToString() + " minutes and " + finalStr;
-            else if (ts.Hours > 0)
-                finalStr = ts.Hours.ToString() + " hours, " +  ts.Minutes.ToString() + " minutes and " + finalStr;
-            else if (ts.Minutes > 0)
-                finalStr = ts.Minutes.ToString() + " minutes and " + finalStr;
-            return (finalStr);
+                return (Sentences.TimeDays(guildId, ts.Days.ToString(), ts.Hours.ToString(), ts.Minutes.ToString(), ts.Seconds.ToString()));
+            if (ts.Hours > 0)
+                return (Sentences.TimeHours(guildId, ts.Hours.ToString(), ts.Minutes.ToString(), ts.Seconds.ToString()));
+            if (ts.Minutes > 0)
+                return (Sentences.TimeMinutes(guildId, ts.Minutes.ToString(), ts.Seconds.ToString()));
+            return (Sentences.TimeSeconds(guildId, ts.Seconds.ToString()));
         }
 
         private async Task UpdateElement(Tuple<string, string>[] elems)

@@ -88,7 +88,7 @@ namespace Lania
                 return;
             }
             int total, relative, read;
-            relative = Program.p.GetDb().GetAllGuilds(Context.Guild.Id, (Context.Channel as ITextChannel).IsNsfw, out total, out read).Count;
+            relative = Program.p.GetDb().GetAllGuilds(Context.Guild.Id, (await Context.Guild.GetTextChannelAsync(ulong.Parse(id))).IsNsfw, out total, out read).Count;
             await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Context.Guild.Id, total.ToString(), relative.ToString(), read.ToString()));
         }
 
