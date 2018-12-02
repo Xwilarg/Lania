@@ -9,6 +9,7 @@ namespace Lania
         public readonly static ulong refChannel = 459341718228172811;
         public readonly static ulong ownerId = 144851584478740481;
         public readonly static string ownerName = "Zirk#0001";
+        public readonly static string inviteLink = "https://discordapp.com/api/oauth2/authorize?client_id=454742499085254656&permissions=346112&scope=bot";
 
         public static string Help(ulong guildId)
         {

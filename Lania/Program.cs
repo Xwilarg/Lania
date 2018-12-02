@@ -133,7 +133,8 @@ namespace Lania
             if (message != null)
             {
                 string[] content = message.Split('|');
-                IUserMessage msg = (await client.GetGuild(Convert.ToUInt64(content[0])).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
+                ulong destGuildId = Convert.ToUInt64(content[0]);
+                IUserMessage msg = (await client.GetGuild(destGuildId).GetTextChannel(Convert.ToUInt64(content[1])).GetMessageAsync(Convert.ToUInt64(content[2]))) as IUserMessage;
                 string[] guilds = msg.Content.Split('#');
                 int id = Convert.ToInt32(content[3]);
                 EmbedBuilder embed = new EmbedBuilder()
@@ -141,10 +142,10 @@ namespace Lania
                     Description = msg.Embeds.ToArray()[0].Description
                 };
                 int counter = 0;
-                string emoteName = (react.Emote.ToString().Length < 4) ? (react.Emote.Name) : (":" + react.Emote.Name + ":");
+                string emoteName = (react.Emote.ToString().Length < 4) ? (react.Emote.Name) : (react.Emote.ToString());
                 foreach (EmbedField field in msg.Embeds.ToArray()[0].Fields)
                 {
-                    embed.AddField(EditField(field, emoteName, addReaction, counter, id));
+                    embed.AddField(EditField(field, emoteName, addReaction, counter, id, destGuildId));
                     counter++;
                 }
                 await msg.ModifyAsync(x => x.Embed = embed.Build());
@@ -152,7 +153,7 @@ namespace Lania
             }
         }
 
-        private EmbedFieldBuilder EditField(EmbedField field, string emoteName, bool addReaction, int counter, int id)
+        private EmbedFieldBuilder EditField(EmbedField field, string emoteName, bool addReaction, int counter, int id, ulong guildId)
         {
             if (counter == id)
             {
@@ -160,7 +161,7 @@ namespace Lania
                 string finalStr = "";
                 foreach (string s in field.Value.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
                 {
-                    if (s == "(Nothing yet)")
+                    if (s == Sentences.NothingYet(guildId))
                         continue;
                     string[] emote = s.Split(' ');
                     if (emote[0] == emoteName)
@@ -176,7 +177,7 @@ namespace Lania
                 if (!found)
                     finalStr += emoteName + " x1" + Environment.NewLine;
                 if (finalStr == "")
-                    finalStr = "(Nothing yet)";
+                    finalStr = Sentences.NothingYet(guildId);
                 return (new EmbedFieldBuilder()
                 {
                     Name = field.Name,
@@ -370,44 +371,38 @@ namespace Lania
         /// <param name="msg">User message</param>
         private async Task SendMessageGate(SocketMessage arg, SocketUserMessage msg)
         {
-            try
+            string url = GetImageUrl(msg);
+            if (url != null)
             {
-                string url = GetImageUrl(msg);
-                if (url != null)
+                ulong guildId = (arg.Channel as ITextChannel).GuildId;
+                RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.WaitMsg(guildId));
+                if (!await db.IsBan(arg.Author.Id.ToString()))
                 {
-                    ulong guildId = (arg.Channel as ITextChannel).GuildId;
-                    RestUserMessage waitMsg = await arg.Channel.SendMessageAsync(Sentences.WaitMsg(guildId));
-                    if (!await db.IsBan(arg.Author.Id.ToString()))
+                    bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
+                    if (await IsSfw(url, isNsfw))
                     {
-                        bool isNsfw = (arg.Channel as ITextChannel).IsNsfw;
-                        if (await IsSfw(url, isNsfw))
+                        TimeSpan? waitValue = CanSendImage(guildId);
+                        if (waitValue == null || waitValue.Value.TotalSeconds < 0)
                         {
-                            TimeSpan? waitValue = CanSendImage(guildId);
-                            if (waitValue == null || waitValue.Value.TotalSeconds < 0)
-                            {
-                                if (timeLastSent.ContainsKey(guildId))
-                                    timeLastSent[guildId] = DateTime.Now;
-                                else
-                                    timeLastSent.Add(guildId, DateTime.Now);
-                                List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
-                                if (ids.Count == 0)
-                                    await waitMsg.ModifyAsync(x => x.Content = Sentences.NoChan(guildId));
-                                else
-                                    await SendImageToServer(ids, arg, url, guildId, waitMsg);
-                            }
+                            if (timeLastSent.ContainsKey(guildId))
+                                timeLastSent[guildId] = DateTime.Now;
                             else
-                                await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(guildId, TimeSpanToString(guildId, waitValue.Value)));
+                                timeLastSent.Add(guildId, DateTime.Now);
+                            List<string> ids = db.GetAllGuilds(guildId, isNsfw, out _, out _);
+                            if (ids.Count == 0)
+                                await waitMsg.ModifyAsync(x => x.Content = Sentences.NoChan(guildId));
+                            else
+                                await SendImageToServer(ids, arg, url, guildId, waitMsg);
                         }
                         else
-                            await waitMsg.ModifyAsync(x => x.Content = Sentences.NsfwImage(guildId) + ((isNsfw) ? (" " + Sentences.WrongNsfw(guildId)) : ("")));
+                            await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(guildId, TimeSpanToString(guildId, waitValue.Value)));
                     }
                     else
-                        await waitMsg.ModifyAsync(x => x.Content = Sentences.IsBannedImage(guildId));
-                    await IncreaseCommandReceived();
+                        await waitMsg.ModifyAsync(x => x.Content = Sentences.NsfwImage(guildId) + ((isNsfw) ? (" " + Sentences.WrongNsfw(guildId)) : ("")));
                 }
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+                else
+                    await waitMsg.ModifyAsync(x => x.Content = Sentences.IsBannedImage(guildId));
+                await IncreaseCommandReceived();
             }
         }
 

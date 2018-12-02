@@ -20,7 +20,7 @@ namespace Lania
         [Command("Invite")]
         public async Task Invite()
         {
-            await ReplyAsync("<https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot>");
+            await ReplyAsync("<" + Sentences.inviteLink + ">");
         }
 
         [Command("Language")]
@@ -71,7 +71,7 @@ namespace Lania
             embed.AddField(Sentences.Uptime(Context.Guild.Id), Program.TimeSpanToString(Context.Guild.Id, DateTime.Now.Subtract(p.startTime)));
             embed.AddField(Sentences.LatestVersion(Context.Guild.Id), new FileInfo(Assembly.GetEntryAssembly().Location).LastWriteTimeUtc.ToString(Sentences.DateTimeFormat(Context.Guild.Id)) + " UTC+0", true);
             embed.AddField("GitHub", "https://github.com/Xwilarg/Lania");
-            embed.AddField(Sentences.InvitationLink(Context.Guild.Id), "https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot");
+            embed.AddField(Sentences.InvitationLink(Context.Guild.Id), Sentences.inviteLink);
             await ReplyAsync("", false, embed.Build());
         }
     }
