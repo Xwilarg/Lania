@@ -278,7 +278,7 @@ namespace Lania
             List<ITextChannel> chans = SendImages(ids, (arg.Channel as ITextChannel).IsNsfw, guildId, out isLast);
             EmbedBuilder embed = new EmbedBuilder()
             {
-                Description = Sentences.FileSent(chans.Count)
+                Description = Sentences.FileSent(guildId, chans.Count.ToString())
             };
             for (int y = 0; y < chans.Count; y++)
                 embed.AddField("#" + (y + 1) + ((y == 0 && isLast) ? (" " + Sentences.LastImage(guildId)) : ("")), Sentences.NothingYet(guildId));
@@ -289,10 +289,10 @@ namespace Lania
             {
                 ulong msgDest = (await chan.SendMessageAsync("", false, new EmbedBuilder() {
                     ImageUrl = url,
-                    Description = Sentences.ImageReceived(guildId),
+                    Title = Sentences.ImageReceived(chan.GuildId),
                     Footer = new EmbedFooterBuilder()
                     {
-                        Text = Sentences.EmoteHelp(guildId)
+                        Text = Sentences.EmoteHelp(chan.GuildId)
                     }
                 }.Build())).Id;
                 ITextChannel textChan = (arg.Channel as ITextChannel);
