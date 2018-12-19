@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Lania
@@ -159,16 +160,20 @@ namespace Lania
             {
                 bool found = false;
                 string finalStr = "";
+                string emoteSmallName = emoteName;
+                Match match = Regex.Match(emoteSmallName, "<(:[^:]+:)[0-9]+>");
+                if (match.Success)
+                    emoteSmallName = match.Groups[1].Value;
                 foreach (string s in field.Value.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
                 {
                     if (s == Sentences.NothingYet(guildId))
                         continue;
                     string[] emote = s.Split(' ');
-                    if (emote[0] == emoteName)
+                    if (emote[0] == emoteName || emote[0] == emoteSmallName)
                     {
                         int newNb = Convert.ToInt32(emote[1].Substring(1, emote[1].Length - 1)) + ((addReaction) ? (1) : (-1));
                         if (newNb > 0)
-                            finalStr += emoteName + " x" + newNb + Environment.NewLine;
+                            finalStr += emote[0] + " x" + newNb + Environment.NewLine;
                         found = true;
                     }
                     else
