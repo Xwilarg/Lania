@@ -30,6 +30,7 @@ namespace Lania
 
         private Dictionary<ulong, DateTime> timeLastSent;
         private const int minutesBetweenSend = 2;
+        private const int nbGuilds = 5;
 
         private RavenClient ravenClient;
         private ImageAnnotatorClient imageClient;
@@ -262,7 +263,7 @@ namespace Lania
             }
             else
                 isLast = false;
-            for (int i = chans.Count; i < 3 && ids.Count > 0; i++)
+            for (int i = chans.Count; i < nbGuilds && ids.Count > 0; i++)
             {
                 int nb = rand.Next(ids.Count);
                 ulong destGuildId = ulong.Parse(ids[nb]);
