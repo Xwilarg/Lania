@@ -102,7 +102,11 @@ namespace Lania
                     SocketGuild guild = Program.p.client.Guilds.ToList().Find(x => x.Id == ulong.Parse(elem.id.ToString()));
                     ITextChannel chan = (guild != null) ? (guild.GetTextChannel(ulong.Parse(elem.chanId.ToString()))) : (null);
                     if (guild != null && chan != null && ((isNsfw && chan.IsNsfw) || !isNsfw))
+                    {
+                        if (!isNsfw && chan.IsNsfw)
+                            readAvailable--;
                         ids.Add(elem.id.ToString());
+                    }
                     else if (guild == null)
                         CloseGate(ulong.Parse(elem.id.ToString()));
                     else if (guild != null && chan != null && isNsfw)

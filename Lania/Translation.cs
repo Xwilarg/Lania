@@ -16,8 +16,10 @@ namespace Lania
             string sentence;
             if (translations[wordLanguage].ContainsKey(word))
                 sentence = translations[wordLanguage][word];
-            else
+            else if (translations["en"].ContainsKey(word))
                 sentence = translations["en"][word];
+            else
+                return (Translate(guildId, "invalidKey", word));
             sentence = sentence.Replace("\\n", "\n");
             for (int i = 0; i < args.Length; i++)
                 sentence = sentence.Replace("{" + i + "}", args[i]);

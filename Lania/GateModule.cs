@@ -89,7 +89,7 @@ namespace Lania
             }
             int total, relative, read;
             relative = Program.p.GetDb().GetAllGuilds(Context.Guild.Id, (await Context.Guild.GetTextChannelAsync(ulong.Parse(id))).IsNsfw, out total, out read).Count;
-            await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Context.Guild.Id, total.ToString(), relative.ToString(), read.ToString()));
+            await ReplyAsync(finalStr + Environment.NewLine + Sentences.NbGates(Context.Guild.Id, total.ToString(), read.ToString(), relative.ToString()));
         }
 
         [Command("Report", RunMode = RunMode.Async), Summary("Report the last image")]
@@ -106,7 +106,7 @@ namespace Lania
                     "", false, new EmbedBuilder
                     {
                         Color = Color.Red,
-                        Title = "Report of user " + content[0] + " by " + Context.User.Id + ", chan NSFW: " + content[4],
+                        Title = "Report of user " + content[0] + " by " + Context.User.Id + ", chan NSFW: " + ((ITextChannel)Context.Channel).IsNsfw,
                         Description = "<" + content[1] + "> the " + DateTime.Now.ToString("dd/MM/yy HH:mm:ss")
                     }.Build());
                 await ((await (await Context.Guild.GetTextChannelAsync(Convert.ToUInt64(content[2]))).GetMessageAsync(Convert.ToUInt64(content[3]))) as IUserMessage).ModifyAsync(
