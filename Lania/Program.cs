@@ -249,7 +249,7 @@ namespace Lania
                 {
                     string guild = content[5];
                     ulong destGuildId = ulong.Parse(guild);
-                    if (db.DoesGuildExist(destGuildId).GetAwaiter().GetResult())
+                    if (db.DoesGuildExist(destGuildId).GetAwaiter().GetResult() && ids.Contains(content[5]))
                     {
                         chans.Add(client.GetGuild(destGuildId).GetTextChannel(Convert.ToUInt64(db.GetGateChan(destGuildId).GetAwaiter().GetResult())));
                         ids.Remove(guild);
