@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
 using Google.Cloud.Vision.V1;
 using SharpRaven;
 using SharpRaven.Data;
@@ -39,6 +40,9 @@ namespace Lania
 
         private Dictionary<string, Dictionary<string, string>> translations;
         private Dictionary<string, List<string>> translationKeyAlternate;
+
+        private AuthDiscordBotListApi dblApi;
+        private DateTime lastDiscordBotsSent;
 
         public Dictionary<string, Dictionary<string, string>> GetTranslations()
         {
@@ -89,6 +93,14 @@ namespace Lania
                 ravenClient = new RavenClient(File.ReadAllText("Keys/raven.dat"));
             else
                 ravenClient = null;
+            if (File.Exists("Keys/discordBotsList.dat"))
+            {
+                string[] content = File.ReadAllLines("Keys/discordBotsList.dat");
+                dblApi = new AuthDiscordBotListApi(ulong.Parse(content[0]), content[1]);
+                lastDiscordBotsSent = DateTime.MinValue;
+            }
+            else
+                dblApi = null;
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
             imageClient = ImageAnnotatorClient.Create();
 
@@ -98,11 +110,14 @@ namespace Lania
             await commands.AddModuleAsync<GateModule>();
 
             client.MessageReceived += HandleCommandAsync;
+            client.JoinedGuild += GuildCountChange;
+            client.LeftGuild += GuildCountChange;
             client.LeftGuild += LeaveGuild;
             client.ReactionAdded += ReactionAdded;
             client.ReactionRemoved += ReactionRemoved;
             client.GuildAvailable += GuildAvailable;
             client.JoinedGuild += GuildAvailable;
+            client.Connected += UpdateDiscordBots;
 
             startTime = DateTime.Now;
             await client.LoginAsync(TokenType.Bot, File.ReadAllText("Keys/token.dat"));
@@ -120,6 +135,20 @@ namespace Lania
             }
 
             await Task.Delay(-1);
+        }
+
+        private async Task GuildCountChange(SocketGuild _)
+        {
+            await UpdateDiscordBots();
+        }
+
+        private async Task UpdateDiscordBots()
+        {
+            if (dblApi != null && lastDiscordBotsSent.AddMinutes(10).CompareTo(DateTime.Now) < 0)
+            {
+                lastDiscordBotsSent = DateTime.Now;
+                await dblApi.UpdateStats(client.Guilds.Count);
+            }
         }
 
         private async Task GuildAvailable(SocketGuild arg)
