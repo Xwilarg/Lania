@@ -20,6 +20,7 @@ Please make not that SFW channels can send images to both NSFW and SFW channels 
 [Invitation link](https://discordapp.com/oauth2/authorize?client_id=454742499085254656&permissions=83968&scope=bot)<br/>
 [Help for the translation](https://github.com/Xwilarg/Lania-translations/)<br/>
 [Trello](https://trello.com/b/Ty972cId/lania)<br/>
+[discordbots.org page](https://discordbots.org/bot/454742499085254656)
 
 # Commands
 
