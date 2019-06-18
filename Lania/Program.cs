@@ -129,7 +129,8 @@ namespace Lania
                     for (;;)
                     {
                         await Task.Delay(60000);
-                        UpdateStatus();
+                        if (client.ConnectionState == ConnectionState.Connected)
+                            UpdateStatus();
                     }
                 });
             }
