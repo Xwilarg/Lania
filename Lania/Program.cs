@@ -30,7 +30,7 @@ namespace Lania
         public DateTime startTime;
 
         private Dictionary<ulong, DateTime> timeLastSent;
-        private const int minutesBetweenSend = 2;
+        private const int secondsBetweenSend = 15;
         private const int nbGuilds = 5;
 
         private RavenClient ravenClient;
@@ -454,7 +454,7 @@ namespace Lania
         private TimeSpan? CanSendImage(ulong guildId)
         {
             if (timeLastSent.ContainsKey(guildId))
-                return (timeLastSent[guildId].AddMinutes(minutesBetweenSend).Subtract(DateTime.Now));
+                return (timeLastSent[guildId].AddSeconds(secondsBetweenSend).Subtract(DateTime.Now));
             return (null);
         }
 
