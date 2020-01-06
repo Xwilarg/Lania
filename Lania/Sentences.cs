@@ -65,7 +65,8 @@ namespace Lania
                 Translation.Translate(guildId, "nbGates3", readNb));
         }
         public static string FileSent(ulong guildId, string guildCount) { return (Translation.Translate(guildId, "fileSent", guildCount)); }
-        
+        public static string OnlyManage(ulong guildId) { return (Translation.Translate(guildId, "onlyManage")); }
+
         public static string Uptime(ulong guildId) { return (Translation.Translate(guildId, "uptime")); }
         public static string LatestVersion(ulong guildId) { return (Translation.Translate(guildId, "latestVersion")); }
         public static string Author(ulong guildId) { return (Translation.Translate(guildId, "author")); }

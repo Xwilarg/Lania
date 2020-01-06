@@ -12,11 +12,19 @@ namespace Lania
     [Group("Gate")]
     public class GateModule : ModuleBase
     {
+        private static bool CanModify(IUser user, ulong ownerId)
+        {
+            if (user.Id == ownerId)
+                return true;
+            IGuildUser guildUser = (IGuildUser)user;
+            return guildUser.GuildPermissions.ManageGuild;
+        }
+
         [Command("Open", RunMode = RunMode.Async), Summary("Open the image gate")]
         public async Task OpenGate()
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-                await ReplyAsync(Sentences.OnlyUser(Context.Guild.Id, (await Context.Guild.GetOwnerAsync()).ToString()));
+            if (!CanModify(Context.User, Context.Guild.OwnerId))
+                await ReplyAsync(Sentences.OnlyManage(Context.Guild.Id));
             else if (await Program.p.GetDb().IsBan(Context.User.Id.ToString()))
                 await ReplyAsync(Sentences.IsBanned(Context.Guild.Id));
             else
@@ -29,8 +37,8 @@ namespace Lania
         [Command("Close", RunMode = RunMode.Async), Summary("Close the image gate")]
         public async Task CloseGate()
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-                await ReplyAsync(Sentences.OnlyUser(Context.Guild.Id, (await Context.Guild.GetOwnerAsync()).ToString()));
+            if (!CanModify(Context.User, Context.Guild.OwnerId))
+                await ReplyAsync(Sentences.OnlyManage(Context.Guild.Id));
             else if (await Close(Context.Guild.Id))
                 await ReplyAsync(Sentences.GateClosed(Context.Guild.Id));
             else
