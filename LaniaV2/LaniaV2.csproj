@@ -203,6 +203,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modules\CommunicationModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Discord-Utils\Utils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
