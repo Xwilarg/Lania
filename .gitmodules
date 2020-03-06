@@ -1,3 +1,6 @@
-[submodule "Lania/Lania-translations"]
-	path = Lania/Lania-translations
-	url = https://github.com/Xwilarg/Lania-translations.git
+[submodule "LaniaV2/Discord-Utils"]
+	path = LaniaV2/Discord-Utils
+	url = https://github.com/Xwilarg/Discord-Utils
+[submodule "LaniaV2/Lania-Translations"]
+	path = LaniaV2/Lania-Translations
+	url = https://github.com/Xwilarg/Lania-Translations
