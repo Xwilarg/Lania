@@ -1,4 +1,5 @@
 ﻿using LaniaV2.Core;
+using Newtonsoft.Json.Linq;
 using RethinkDb.Driver;
 using RethinkDb.Driver.Net;
 using System.Threading.Tasks;
@@ -16,6 +17,10 @@ namespace LaniaV2.Db
                 await R.DbCreate(dbName).RunAsync(conn);
             if (!await R.Db(dbName).TableList().Contains("Guilds").RunAsync<bool>(conn))
                 await R.Db(dbName).TableCreate("Guilds").RunAsync(conn);
+            if (!await R.Db(dbName).TableList().Contains("Bans").RunAsync<bool>(conn))
+                await R.Db(dbName).TableCreate("Bans").RunAsync(conn);
+            foreach (JProperty p in await R.Db(dbName).Table("Guilds").RunAsync<Guild>(conn))
+                System.Console.WriteLine(p.Name + " ; " + p.Value);
         }
 
         public async Task InitGuildAsync(ulong guildId)

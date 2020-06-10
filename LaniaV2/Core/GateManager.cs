@@ -13,6 +13,9 @@ namespace LaniaV2.Core
         public void AddGuild(ulong id, Guild guild)
             => _guilds.Add(id, guild);
 
+        public void AddBan(ulong id, string reason)
+            => _bans.Add(id, reason);
+
         public string GetLanguage(ulong id)
             => _guilds[id].GetLanguage();
 
