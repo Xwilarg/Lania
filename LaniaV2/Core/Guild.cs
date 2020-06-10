@@ -10,11 +10,23 @@ namespace LaniaV2.Core
             _prefix = "l.";
             _language = "en";
             _lastReceived = new Guild[2] { null, null };
-            _gates = new List<Gate>();
+            _gates = new Dictionary<ulong, Gate>();
         }
+
+        public bool DoesGateExist(ulong id)
+            => _gates.ContainsKey(id);
+
+        public bool DidReachMaxLimitGate()
+            => _gates.Count == 3;
+
+        public int GetMaxLimitGate()
+            => nbMax;
 
         public string GetLanguage()
             => _language;
+
+        public void AddGate(ulong chanId)
+            => _gates.Add(chanId, new Gate());
 
         [JsonProperty]
         private string _prefix;
@@ -23,6 +35,8 @@ namespace LaniaV2.Core
         [JsonProperty]
         private Guild[] _lastReceived; // Guild from where the last image was received
         [JsonProperty]
-        private List<Gate> _gates;
+        private Dictionary<ulong, Gate> _gates; // Chan id / Gate
+
+        private const int nbMax = 3;
     }
 }
