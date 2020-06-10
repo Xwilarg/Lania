@@ -23,6 +23,8 @@ namespace LaniaV2
         public static Program P { private set; get; }
         public Db.Db LaniaDb { private set; get; }
 
+        public Core.GateManager Manager { private set; get; }
+
         // Translations
         public Dictionary<string, Dictionary<string, string>> Translations { private set; get; }
         public Dictionary<string, List<string>> TranslationKeyAlternate { private set; get; }
@@ -45,8 +47,12 @@ namespace LaniaV2
                 throw new NullReferenceException("Your Credentials.json is missing mandatory information, it must at least contains botToken");
 
             client.MessageReceived += HandleCommandAsync;
+            client.GuildAvailable += GuildJoin;
+            client.JoinedGuild += GuildJoin;
 
             await commands.AddModuleAsync<CommunicationModule>(null);
+
+            Manager = new Core.GateManager();
 
             LaniaDb = new Db.Db();
             await LaniaDb.InitAsync();
@@ -60,6 +66,11 @@ namespace LaniaV2
             await client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private async Task GuildJoin(SocketGuild guild)
+        {
+            await LaniaDb.InitGuildAsync(guild.Id);
         }
 
         private async Task HandleCommandAsync(SocketMessage arg)
