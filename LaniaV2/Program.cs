@@ -51,6 +51,7 @@ namespace LaniaV2
             client.JoinedGuild += GuildJoin;
 
             await commands.AddModuleAsync<CommunicationModule>(null);
+            await commands.AddModuleAsync<GateModule>(null);
 
             Manager = new Core.GateManager();
 
@@ -59,7 +60,7 @@ namespace LaniaV2
 
             Translations = new Dictionary<string, Dictionary<string, string>>();
             TranslationKeyAlternate = new Dictionary<string, List<string>>();
-            Utils.InitTranslations(Translations, TranslationKeyAlternate, "../../Lania-translations/Translations");
+            Utils.InitTranslations(Translations, TranslationKeyAlternate, "../../../Lania-translations/Translations");
 
             await client.LoginAsync(TokenType.Bot, (string)json.botToken);
             StartTime = DateTime.Now;

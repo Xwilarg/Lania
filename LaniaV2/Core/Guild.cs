@@ -15,11 +15,17 @@ namespace LaniaV2.Core
             id = guildId.ToString();
         }
 
-        public bool DoesGateExist(ulong id)
-            => _gates.ContainsKey(id);
+        public bool HaveAnyGate()
+            => _gates.Count > 0;
+
+        public bool DoesGateExist(ulong chanId)
+            => _gates.ContainsKey(chanId);
 
         public bool DidReachMaxLimitGate()
             => _gates.Count == 3;
+
+        public Dictionary<ulong, Gate> GetGates()
+            => _gates;
 
         public int GetMaxLimitGate()
             => nbMax;
@@ -30,7 +36,7 @@ namespace LaniaV2.Core
         public void AddGate(ulong chanId)
             => _gates.Add(chanId, new Gate());
 
-        public void RemoveGame(ulong chanId)
+        public void RemoveGate(ulong chanId)
             => _gates.Remove(chanId);
 
         [JsonProperty]
