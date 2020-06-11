@@ -19,7 +19,7 @@ namespace LaniaV2.Db
                 await R.Db(dbName).TableCreate("Guilds").RunAsync(conn);
             if (!await R.Db(dbName).TableList().Contains("Bans").RunAsync<bool>(conn))
                 await R.Db(dbName).TableCreate("Bans").RunAsync(conn);
-            foreach (JProperty p in await R.Db(dbName).Table("Guilds").RunAsync<Guild>(conn))
+            foreach (JProperty p in await R.Db(dbName).Table("Bans").RunAsync(conn))
                 System.Console.WriteLine(p.Name + " ; " + p.Value);
         }
 
@@ -28,12 +28,17 @@ namespace LaniaV2.Db
             Guild guild;
             if (await R.Db(dbName).Table("Guilds").GetAll(guildId.ToString()).Count().Eq(0).RunAsync<bool>(conn))
             {
-                guild = new Guild();
+                guild = new Guild(guildId);
                 await R.Db(dbName).Table("Guilds").Insert(guild).RunAsync(conn);
             }
             else
                 guild = await R.Db(dbName).Table("Guilds").Get(guildId.ToString()).RunAsync<Guild>(conn);
             Program.P.Manager.AddGuild(guildId, guild);
+        }
+
+        public async Task UpdateGuild(Guild guild)
+        {
+            await R.Db(dbName).Table("Guilds").Update(guild).RunAsync(conn);
         }
 
         private RethinkDB R;

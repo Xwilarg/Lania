@@ -16,7 +16,7 @@ namespace LaniaV2.Modules
             return guildUser.GuildPermissions.ManageGuild;
         }
 
-        [Command("Open", RunMode = RunMode.Async)]
+        [Command("Open")]
         public async Task OpenGate(params string[] _)
         {
             if (!CanModify(Context.User, Context.Guild.OwnerId))
@@ -37,5 +37,8 @@ namespace LaniaV2.Modules
                 }
             }
         }
+
+        [Command("Close")]
+        public async Task 
     }
 }
