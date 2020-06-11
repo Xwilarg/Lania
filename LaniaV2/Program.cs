@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordUtils;
+using Google.Cloud.Vision.V1;
 using LaniaV2.Modules;
 using Newtonsoft.Json;
 using System;
@@ -28,6 +29,8 @@ namespace LaniaV2
         // Translations
         public Dictionary<string, Dictionary<string, string>> Translations { private set; get; }
         public Dictionary<string, List<string>> TranslationKeyAlternate { private set; get; }
+
+        private ImageAnnotatorClient imageClient;
 
         private Program()
         {
@@ -61,6 +64,11 @@ namespace LaniaV2
             Translations = new Dictionary<string, Dictionary<string, string>>();
             TranslationKeyAlternate = new Dictionary<string, List<string>>();
             Utils.InitTranslations(Translations, TranslationKeyAlternate, "../../../Lania-translations/Translations");
+
+            if (!File.Exists("Keys/imageAPI.json"))
+                throw new FileNotFoundException("Missing Keys/imageAPI.json");
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
+            imageClient = ImageAnnotatorClient.Create();
 
             await client.LoginAsync(TokenType.Bot, (string)json.botToken);
             StartTime = DateTime.Now;
