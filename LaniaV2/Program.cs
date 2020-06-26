@@ -3,6 +3,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using DiscordUtils;
 using Google.Cloud.Vision.V1;
+using LaniaV2.Gate;
 using LaniaV2.Modules;
 using Newtonsoft.Json;
 using System;
@@ -26,11 +27,11 @@ namespace LaniaV2
 
         public Core.GateManager Manager { private set; get; }
 
+        private GateManager gate;
+
         // Translations
         public Dictionary<string, Dictionary<string, string>> Translations { private set; get; }
         public Dictionary<string, List<string>> TranslationKeyAlternate { private set; get; }
-
-        private ImageAnnotatorClient imageClient;
 
         private Program()
         {
@@ -68,7 +69,7 @@ namespace LaniaV2
             if (!File.Exists("Keys/imageAPI.json"))
                 throw new FileNotFoundException("Missing Keys/imageAPI.json");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
-            imageClient = ImageAnnotatorClient.Create();
+            gate = new GateManager();
 
             await client.LoginAsync(TokenType.Bot, (string)json.botToken);
             StartTime = DateTime.Now;
@@ -87,6 +88,13 @@ namespace LaniaV2
             SocketUserMessage msg = arg as SocketUserMessage;
             if (msg == null || arg.Author.IsBot) return;
             int pos = 0;
+            ITextChannel chan = msg.Channel as ITextChannel;
+            if (chan != null)
+            {
+                var guild = Manager.GetGuild(chan.GuildId);
+                if (guild.DoesGateExist(chan.Id))
+                    _ = Task.Run(() => gate.SendToRandomGates(guild, msg));
+            }
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {
                 SocketCommandContext context = new SocketCommandContext(client, msg);
