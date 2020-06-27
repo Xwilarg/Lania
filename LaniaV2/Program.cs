@@ -91,7 +91,7 @@ namespace LaniaV2
             {
                 var guild = Manager.GetGuild(chan.GuildId);
                 if (guild.DoesGateExist(chan.Id))
-                    _ = Task.Run(() => Manager.SendToRandomGates(guild, msg));
+                    _ = Task.Run(async () => await Manager.SendToRandomGates(guild, chan, msg));
             }
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {

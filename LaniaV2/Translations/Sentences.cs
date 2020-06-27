@@ -27,5 +27,11 @@ namespace LaniaV2.Translations
         public static string Banned(ulong? guildId) { return Translate(guildId, "banned"); }
         public static string UserBanned(ulong? guildId, string reason, int gatesClosed) { return Translate(guildId, "userBanned", reason, gatesClosed.ToString()); }
         public static string GateClosedBan(ulong? guildId, int nbGates) { return Translate(guildId, "gateClosedBan", nbGates.ToString()); }
+
+        // Image processing
+        public static string WaitMsg(ulong? guildId) { return Translate(guildId, "waitMsg"); }
+        public static string IsBannedImage(ulong? guildId) { return Translate(guildId, "isBannedImage"); }
+        public static string NsfwImage(ulong? guildId) { return Translate(guildId, "nsfwImage"); }
+        public static string WrongNsfw(ulong? guildId) { return Translate(guildId, "wrongNsfw"); }
     }
 }
