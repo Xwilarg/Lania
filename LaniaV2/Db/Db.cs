@@ -41,6 +41,11 @@ namespace LaniaV2.Db
             await R.Db(dbName).Table("Guilds").Update(guild).RunAsync(conn);
         }
 
+        public async Task RemoveGuild(Guild guild)
+        {
+            await R.Db(dbName).Table("Guilds").Get(guild).Delete().RunAsync(conn);
+        }
+
         public async Task AddBan(ulong userId, string reason)
         {
             await R.Db(dbName).Table("Bans").Insert(R.HashMap("id", userId.ToString())

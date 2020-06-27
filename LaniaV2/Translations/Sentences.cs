@@ -33,5 +33,6 @@ namespace LaniaV2.Translations
         public static string IsBannedImage(ulong? guildId) { return Translate(guildId, "isBannedImage"); }
         public static string NsfwImage(ulong? guildId) { return Translate(guildId, "nsfwImage"); }
         public static string WrongNsfw(ulong? guildId) { return Translate(guildId, "wrongNsfw"); }
+        public static string WaitImage(ulong? guildId, int timeBetween) { return Translate(guildId, "waitImage", timeBetween.ToString()); }
     }
 }

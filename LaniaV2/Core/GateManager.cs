@@ -31,7 +31,52 @@ namespace LaniaV2.Core
                 bool isNsfw = chan.IsNsfw;
                 if (!await IsSfw(url, isNsfw))
                     await waitMsg.ModifyAsync(x => x.Content = Sentences.NsfwImage(chan.GuildId) + (isNsfw ? " " + Sentences.WrongNsfw(chan.GuildId) : ""));
+                else if (!guild.CanSend())
+                    await waitMsg.ModifyAsync(x => x.Content = Sentences.WaitImage(chan.GuildId, guild.GetSecondsBetweenSend()));
+                else
+                {
+                    guild.UpdateSendTime();
+                }
             }
+        }
+
+        /// <summary>
+        /// Get 5 random gates
+        /// </summary>
+        private List<(SocketTextChannel, Gate)> GetRandomGates(ulong guildId, bool isNsfw, out int readAvailables, out int sendAvailable, out int chanReadAvailable, out int chanSendAvailable)
+        {
+            readAvailables = 0;
+            sendAvailable = 0;
+            chanReadAvailable = 0;
+            chanSendAvailable = 0;
+            List<(SocketTextChannel, Gate)> allGates = new List<(SocketTextChannel, Gate)>();
+            foreach (var g in _guilds)
+            {
+                if (g.Key == guildId) // We ignore our guild
+                    continue;
+                g.Value.CleanGates().GetAwaiter().GetResult();
+                if (g.Value.HaveAnyGate()) // If there is any gate opened in the guild
+                {
+                    // TODO: FIX
+                    readAvailables++; // + 1 guild avalable
+                    var gates = g.Value.GetGates(isNsfw, out int totalCount);
+                    chanReadAvailable += totalCount; // Add all the gates count
+                    chanSendAvailable += gates.Count; // GetGates returns all the gates we can send to
+                    if (gates.Count > 1)
+                    {
+                        sendAvailable++; // If there is any gate we can send to, that means we can send to this guild
+                    }
+                    allGates.Add(gates[Program.P.Rand.Next(0, gates.Count)]);
+                }
+            }
+            List<(SocketTextChannel, Gate)> finalGuilds = new List<(SocketTextChannel, Gate)>();
+            while (finalGuilds.Count < 5)
+            {
+                var tmp = allGates[Program.P.Rand.Next(0, allGates.Count];
+                allGates.Remove(tmp);
+                finalGuilds.Add(tmp);
+            }
+            return finalGuilds;
         }
 
         private async Task<bool> IsSfw(string url, bool isChanNsfw)
@@ -39,8 +84,8 @@ namespace LaniaV2.Core
             var image = await Google.Cloud.Vision.V1.Image.FetchFromUriAsync(url);
             SafeSearchAnnotation response = await _imageClient.DetectSafeSearchAsync(image);
             if (isChanNsfw)
-                return ((int)response.Medical < 3 && (int)response.Violence < 3);
-            return ((int)response.Adult < 3 && (int)response.Medical < 3 && (int)response.Violence < 3);
+                return (int)response.Medical < 3 && (int)response.Violence < 3;
+            return (int)response.Adult < 3 && (int)response.Medical < 3 && (int)response.Violence < 3;
         }
 
         private string GetImageUrl(SocketUserMessage msg)
@@ -52,7 +97,7 @@ namespace LaniaV2.Core
 
         private bool IsUrlImage(string url)
         {
-            var req = (HttpWebRequest)HttpWebRequest.Create(url);
+            var req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "HEAD";
             using (var resp = req.GetResponse())
             {

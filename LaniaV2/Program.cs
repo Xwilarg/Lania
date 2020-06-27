@@ -22,6 +22,7 @@ namespace LaniaV2
         public DateTime StartTime { private set; get; }
         public static Program P { private set; get; }
         public Db.Db LaniaDb { private set; get; }
+        public Random Rand { private set; get; }
 
         public Core.GateManager Manager { private set; get; }
 
@@ -51,10 +52,12 @@ namespace LaniaV2
             client.MessageReceived += HandleCommandAsync;
             client.GuildAvailable += GuildJoin;
             client.JoinedGuild += GuildJoin;
+            client.LeftGuild += LeftGuild;
 
             await commands.AddModuleAsync<CommunicationModule>(null);
             await commands.AddModuleAsync<GateModule>(null);
 
+            Rand = new Random();
             OwnerId = ulong.Parse((string)json.ownerId);
             Manager = new Core.GateManager();
 
@@ -74,6 +77,11 @@ namespace LaniaV2
             await client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private async Task LeftGuild(SocketGuild guild)
+        {
+            await LaniaDb.RemoveGuild(Manager.GetGuild(guild.Id));
         }
 
         private async Task GuildJoin(SocketGuild guild)
