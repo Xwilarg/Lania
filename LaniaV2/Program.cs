@@ -2,8 +2,6 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordUtils;
-using Google.Cloud.Vision.V1;
-using LaniaV2.Gate;
 using LaniaV2.Modules;
 using Newtonsoft.Json;
 using System;
@@ -27,11 +25,11 @@ namespace LaniaV2
 
         public Core.GateManager Manager { private set; get; }
 
-        private GateManager gate;
-
         // Translations
         public Dictionary<string, Dictionary<string, string>> Translations { private set; get; }
         public Dictionary<string, List<string>> TranslationKeyAlternate { private set; get; }
+
+        public ulong OwnerId { private set; get; }
 
         private Program()
         {
@@ -47,8 +45,8 @@ namespace LaniaV2
         private async Task MainAsync()
         {
             dynamic json = JsonConvert.DeserializeObject(File.ReadAllText("Keys/Credentials.json"));
-            if (json.botToken == null)
-                throw new NullReferenceException("Your Credentials.json is missing mandatory information, it must at least contains botToken");
+            if (json.botToken == null || json.ownerId == null)
+                throw new NullReferenceException("Your Credentials.json is missing mandatory information, it must at least contains botToken and ownerId");
 
             client.MessageReceived += HandleCommandAsync;
             client.GuildAvailable += GuildJoin;
@@ -57,6 +55,7 @@ namespace LaniaV2
             await commands.AddModuleAsync<CommunicationModule>(null);
             await commands.AddModuleAsync<GateModule>(null);
 
+            OwnerId = ulong.Parse((string)json.ownerId);
             Manager = new Core.GateManager();
 
             LaniaDb = new Db.Db();
@@ -69,7 +68,6 @@ namespace LaniaV2
             if (!File.Exists("Keys/imageAPI.json"))
                 throw new FileNotFoundException("Missing Keys/imageAPI.json");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
-            gate = new GateManager();
 
             await client.LoginAsync(TokenType.Bot, (string)json.botToken);
             StartTime = DateTime.Now;
@@ -93,7 +91,7 @@ namespace LaniaV2
             {
                 var guild = Manager.GetGuild(chan.GuildId);
                 if (guild.DoesGateExist(chan.Id))
-                    _ = Task.Run(() => gate.SendToRandomGates(guild, msg));
+                    _ = Task.Run(() => Manager.SendToRandomGates(guild, msg));
             }
             if (msg.HasMentionPrefix(client.CurrentUser, ref pos) || msg.HasStringPrefix("l.", ref pos))
             {

@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using LaniaV2.Translations;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +13,8 @@ namespace LaniaV2.Modules
     {
         private static bool CanModify(IUser user, ulong ownerId)
         {
+            if (user == null)
+                return false;
             if (user.Id == ownerId)
                 return true;
             var guildUser = (IGuildUser)user;
@@ -85,6 +89,54 @@ namespace LaniaV2.Modules
                     else
                         await ReplyAsync(str.ToString());
                 }
+            }
+        }
+
+        [Command("Ban")]
+        public async Task BanGuild(string user, params string[] args)
+        {
+            if (Context.User.Id != Program.P.OwnerId)
+            {
+                await ReplyAsync(Sentences.OnlyUser(Context.Guild?.Id));
+                return;
+            }
+            ulong userId;
+            if (!ulong.TryParse(user, out userId))
+            {
+                await ReplyAsync(Sentences.NotUlong(Context.Guild?.Id));
+                return;
+            }
+            string reason = string.Join(" ", args);
+            if (Program.P.Manager.IsBanned(userId))
+            {
+                await ReplyAsync(Sentences.AlreadyBanned(Context.Guild?.Id));
+                return;
+            }
+            await Program.P.Manager.AddBan(userId, reason);
+            await ReplyAsync(Sentences.Banned(Context.Guild?.Id));
+            int gatesClosed = 0;
+            SocketGuildUser guildUser = null;
+            foreach (var guild in Program.P.client.Guilds)
+            {
+                if (guildUser != null)
+                {
+                    guildUser = guild.Users.ToList().Find(x => x.Id == userId); // We don't download the whole list cause we will probably get ratelimited pretty quickly
+                }
+                if (CanModify(guild.GetUser(userId), guild.OwnerId)) // The user we want to ban is the owner of the guild
+                {
+                    Core.Guild guildObj = Program.P.Manager.GetGuild(Context.Guild.Id);
+                    if (guildObj.DoesGateExist(Context.Channel.Id))
+                    {
+                        guildObj.RemoveGate(Context.Channel.Id);
+                        gatesClosed++;
+                    }
+                }
+            }
+            if (guildUser != null)
+            {
+                await guildUser.SendMessageAsync(Sentences.UserBanned(null, reason, gatesClosed));
+                if (gatesClosed > 0)
+                    await ReplyAsync(Sentences.GateClosedBan(Context.Guild?.Id, gatesClosed));
             }
         }
     }
