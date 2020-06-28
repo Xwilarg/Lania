@@ -26,19 +26,13 @@ namespace LaniaV2.Core
         /// <summary>
         /// Get all the guilds we can send messages to
         /// </summary>
-        public List<(SocketTextChannel, Gate)> GetGates(bool isNsfw, out int totalCount)
+        public List<(SocketTextChannel, Gate)> GetGates(bool isNsfw, out int totalRead, out int totalSend)
         {
-            totalCount = _gates.Count; // Number of gates we can read from
-            if (isNsfw) // If our channel is NSFW we can send everywhere
-            {
-                return _gates.Select(x => (Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key), x.Value)).ToList();
-            }
-            // If our channel is not NSFW we only get safe channels
-            return _gates.Where(x =>
-            {
-                var textChan = Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key);
-                return !textChan.IsNsfw;
-            }).Select(x => (Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key), x.Value)).ToList();
+            var safeGates = _gates.Where(x => !Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key).IsNsfw).Select(x => (Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key), x.Value)).ToList();
+            var notSafeGates = _gates.Select(x => (Program.P.client.GetGuild(ulong.Parse(id)).GetTextChannel(x.Key), x.Value)).ToList();
+            totalRead = isNsfw ? safeGates.Count : notSafeGates.Count;
+            totalSend = isNsfw ? notSafeGates.Count : safeGates.Count;
+            return isNsfw ? notSafeGates : safeGates;
         }
 
 
@@ -58,7 +52,7 @@ namespace LaniaV2.Core
             => _language;
 
         public void AddGate(ulong chanId)
-            => _gates.Add(chanId, new Gate());
+            => _gates.Add(chanId, new Gate(id));
 
         public void RemoveGate(ulong chanId)
             => _gates.Remove(chanId);
@@ -92,6 +86,39 @@ namespace LaniaV2.Core
             }
         }
 
+        public Guild[] GetLastReceived()
+        {
+            List<Guild> lasts = new List<Guild>();
+            foreach (var elem in _lastReceived)
+            {
+                if (elem != null)
+                    lasts.Add(elem);
+            }
+            return lasts.ToArray();
+        }
+
+        /// <summary>
+        /// Remove the id of a guild if it's in _lastReceived
+        /// </summary>
+        public void CleanLastReceived(string id)
+        {
+            for (int i = 0; i < _lastReceived.Length; i++)
+            {
+                if (_lastReceived[i].GetID() == id)
+                {
+                    _lastReceived[i] = null;
+                    break;
+                }
+            }
+        }
+
+        public void AddLastReceived(Guild guild)
+        {
+            for (int i = 1; i < _lastReceived.Length; i++)
+                _lastReceived[i - 1] = _lastReceived[i];
+            _lastReceived[_lastReceived.Length - 1] = guild;
+        }
+
         [JsonProperty]
         private string _prefix;
         [JsonProperty]
@@ -103,6 +130,8 @@ namespace LaniaV2.Core
 
         [JsonProperty]
         private string id; // Key for the db
+
+        public string GetID() => id;
 
         private DateTime _lastSent = DateTime.MinValue;
         private const int nbMax = 3;

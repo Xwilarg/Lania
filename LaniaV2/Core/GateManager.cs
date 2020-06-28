@@ -36,6 +36,52 @@ namespace LaniaV2.Core
                 else
                 {
                     guild.UpdateSendTime();
+                    var gates = GetRandomGates(ulong.Parse(guild.GetID()), isNsfw, out _, out _, out _, out _);
+                    var lasts = guild.GetLastReceived();
+                    List<(SocketTextChannel, Gate)> finalGates = new List<(SocketTextChannel, Gate)>();
+                    var embed = new EmbedBuilder
+                    {
+                        Description = Sentences.FileSent(chan.GuildId),
+                        Color = Color.Blue
+                    };
+                    int c = 1;
+                    foreach (var g in lasts)
+                    {
+                        if (g.HaveAnyGate())
+                        {
+                            var tmp = g.GetGates(isNsfw, out _, out _);
+                            if (tmp.Count > 0)
+                            {
+                                finalGates.Add(tmp[Program.P.Rand.Next(0, tmp.Count)]);
+                                embed.AddField("#" + c + " " + Sentences.LastImage(chan.GuildId), Sentences.NothingYet(chan.GuildId));
+                                c++;
+                            }
+                        }
+                    }
+                    foreach (var g in gates)
+                    {
+                        finalGates.Add(g);
+                        embed.AddField("#" + c, Sentences.NothingYet(chan.GuildId));
+                        c++;
+                        if (finalGates.Count == numberSent)
+                            break;
+                    }
+
+                    foreach (var g in finalGates)
+                    {
+                        _guilds[g.Item2.GetGuildId()].AddLastReceived(guild);
+                        await g.Item1.SendMessageAsync("", false, new EmbedBuilder
+                        {
+                            Title = Sentences.ImageReceived(g.Item1.Guild.Id),
+                            Color = Color.Blue,
+                            ImageUrl = url,
+                            Footer = new EmbedFooterBuilder
+                            {
+                                Text = Sentences.EmoteHelp(g.Item1.Guild.Id)
+                            }
+                        }.Build());
+                    }
+                    await chan.SendMessageAsync("", false, embed.Build());
                 }
             }
         }
@@ -57,22 +103,20 @@ namespace LaniaV2.Core
                 g.Value.CleanGates().GetAwaiter().GetResult();
                 if (g.Value.HaveAnyGate()) // If there is any gate opened in the guild
                 {
-                    // TODO: FIX
-                    readAvailables++; // + 1 guild avalable
-                    var gates = g.Value.GetGates(isNsfw, out int totalCount);
-                    chanReadAvailable += totalCount; // Add all the gates count
-                    chanSendAvailable += gates.Count; // GetGates returns all the gates we can send to
+                    var gates = g.Value.GetGates(isNsfw, out int totalRead, out int totalSend);
+                    chanReadAvailable += totalRead;
+                    chanSendAvailable += totalSend;
+                    if (totalRead > 1)
+                        readAvailables++; // If we can read from at least one guild
                     if (gates.Count > 1)
-                    {
                         sendAvailable++; // If there is any gate we can send to, that means we can send to this guild
-                    }
                     allGates.Add(gates[Program.P.Rand.Next(0, gates.Count)]);
                 }
             }
             List<(SocketTextChannel, Gate)> finalGuilds = new List<(SocketTextChannel, Gate)>();
-            while (finalGuilds.Count < 5)
+            while (allGates.Count != 0 && finalGuilds.Count < numberSent)
             {
-                var tmp = allGates[Program.P.Rand.Next(0, allGates.Count];
+                var tmp = allGates[Program.P.Rand.Next(0, allGates.Count)];
                 allGates.Remove(tmp);
                 finalGuilds.Add(tmp);
             }
@@ -108,6 +152,16 @@ namespace LaniaV2.Core
         public void AddGuild(ulong id, Guild guild)
             => _guilds.Add(id, guild);
 
+        public void RemoveGuild(ulong id)
+        {
+            _guilds.Remove(id);
+            string idStr = id.ToString();
+            foreach (var g in _guilds)
+            {
+                g.Value.CleanLastReceived(idStr);
+            }
+        }
+
         public async Task AddBan(ulong id, string reason)
         {
             await Program.P.LaniaDb.AddBan(id, reason);
@@ -132,5 +186,7 @@ namespace LaniaV2.Core
         private Dictionary<ulong, Guild> _guilds;
         private Dictionary<ulong, string> _bans; // List of people banned with the reason of their ban
         private ImageAnnotatorClient _imageClient;
+
+        private const int numberSent = 5;
     }
 }

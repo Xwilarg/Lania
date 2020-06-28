@@ -34,5 +34,10 @@ namespace LaniaV2.Translations
         public static string NsfwImage(ulong? guildId) { return Translate(guildId, "nsfwImage"); }
         public static string WrongNsfw(ulong? guildId) { return Translate(guildId, "wrongNsfw"); }
         public static string WaitImage(ulong? guildId, int timeBetween) { return Translate(guildId, "waitImage", timeBetween.ToString()); }
+        public static string FileSent(ulong? guildId) { return Translate(guildId, "fileSent"); }
+        public static string LastImage(ulong? guildId) { return Translate(guildId, "lastImage"); }
+        public static string NothingYet(ulong? guildId) { return Translate(guildId, "nothingYet"); }
+        public static string ImageReceived(ulong? guildId) { return Translate(guildId, "imageReceived"); }
+        public static string EmoteHelp(ulong? guildId) { return Translate(guildId, "emoteHelp"); }
     }
 }

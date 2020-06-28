@@ -82,6 +82,7 @@ namespace LaniaV2
         private async Task LeftGuild(SocketGuild guild)
         {
             await LaniaDb.RemoveGuild(Manager.GetGuild(guild.Id));
+            Manager.RemoveGuild(guild.Id);
         }
 
         private async Task GuildJoin(SocketGuild guild)
