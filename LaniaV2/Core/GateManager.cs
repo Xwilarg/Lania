@@ -89,7 +89,7 @@ namespace LaniaV2.Core
         /// <summary>
         /// Get 5 random gates
         /// </summary>
-        private List<(SocketTextChannel, Gate)> GetRandomGates(ulong guildId, bool isNsfw, out int readAvailables, out int sendAvailable, out int chanReadAvailable, out int chanSendAvailable)
+        public List<(SocketTextChannel, Gate)> GetRandomGates(ulong guildId, bool isNsfw, out int readAvailables, out int sendAvailable, out int chanReadAvailable, out int chanSendAvailable)
         {
             readAvailables = 0;
             sendAvailable = 0;
@@ -182,6 +182,12 @@ namespace LaniaV2.Core
 
         public Guild GetGuild(ulong id)
             => _guilds[id];
+
+        public int GetNbGuilds()
+            => _guilds.Count;
+
+        public int GetNbGates()
+            => _guilds.Sum(x => x.Value.GetNumberGates());
 
         private Dictionary<ulong, Guild> _guilds;
         private Dictionary<ulong, string> _bans; // List of people banned with the reason of their ban

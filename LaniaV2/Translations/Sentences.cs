@@ -15,10 +15,12 @@ namespace LaniaV2.Translations
         public static string NoGate(ulong? guildId) { return Translate(guildId, "noGate"); }
         public static string GateOpened(ulong? guildId) { return Translate(guildId, "gateOpened"); }
         public static string GateClosed(ulong? guildId) { return Translate(guildId, "gateClosed"); }
+        public static string GateUnknown(ulong? guildId) { return Translate(guildId, "gateUnknown"); }
 
         // Status
         public static string NoGateHere(ulong? guildId) { return Translate(guildId, "noGateHere"); }
-        public static string GateOpenedIn(ulong? guildId, string chan, bool isNsfw) { return Translate(guildId, "gateOpenedIn", chan, isNsfw ? "NSFW" : "SFW"); }
+        public static string GateOpenedIn(ulong? guildId, string chan, bool isNsfw, int nb1, int nb2, int nb3, int nb4) { return Translate(guildId, "gateOpenedIn", chan, isNsfw ? "NSFW" : "SFW", nb1.ToString(), nb2.ToString(), nb3.ToString(), nb4.ToString()); }
+        public static string NbGates(ulong? guildId, int nbGates, int nbGuilds) { return Translate(guildId, "nbGates", nbGates.ToString(), nbGuilds.ToString()); }
 
         // Ban
         public static string OnlyUser(ulong? guildId) { return Translate(guildId, "onlyUser"); }

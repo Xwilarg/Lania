@@ -59,6 +59,7 @@ namespace LaniaV2
 
             Rand = new Random();
             OwnerId = ulong.Parse((string)json.ownerId);
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
             Manager = new Core.GateManager();
 
             LaniaDb = new Db.Db();
@@ -70,7 +71,6 @@ namespace LaniaV2
 
             if (!File.Exists("Keys/imageAPI.json"))
                 throw new FileNotFoundException("Missing Keys/imageAPI.json");
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "Keys/imageAPI.json");
 
             await client.LoginAsync(TokenType.Bot, (string)json.botToken);
             StartTime = DateTime.Now;

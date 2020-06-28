@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordUtils;
 using LaniaV2.Translations;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace LaniaV2.Modules
         }
 
         [Command("Open")]
-        public async Task OpenGate(params string[] _)
+        public async Task OpenGate(params string[] args)
         {
             if (!CanModify(Context.User, Context.Guild.OwnerId))
                 await ReplyAsync(Sentences.OnlyManage(Context.Guild.Id));
@@ -30,21 +31,33 @@ namespace LaniaV2.Modules
                 await ReplyAsync(Sentences.IsBanned(Context.Guild.Id));
             else
             {
+                ITextChannel chan;
+                if (args.Length > 0)
+                {
+                    chan = await Utils.GetTextChannel(string.Join(" ", args), Context.Guild);
+                    if (chan == null)
+                    {
+                        await ReplyAsync(Sentences.GateUnknown(Context.Guild.Id));
+                        return;
+                    }
+                }
+                else
+                    chan = (ITextChannel)Context.Channel;
                 Core.Guild guild = Program.P.Manager.GetGuild(Context.Guild.Id);
-                if (guild.DoesGateExist(Context.Channel.Id))
+                if (guild.DoesGateExist(chan.Id))
                     await ReplyAsync(Sentences.GateAlredyOpened(Context.Guild.Id));
                 else if (guild.DidReachMaxLimitGate())
                     await ReplyAsync(Sentences.TooManyGatesOpened(Context.Guild.Id, guild.GetMaxLimitGate()));
                 else
                 {
-                    guild.AddGate(Context.Channel.Id);
+                    guild.AddGate(chan.Id);
                     await ReplyAsync(Sentences.GateOpened(Context.Guild.Id));
                 }
             }
         }
 
         [Command("Close")]
-        public async Task CloseGate(params string[] _)
+        public async Task CloseGate(params string[] args)
         {
             if (!CanModify(Context.User, Context.Guild.OwnerId))
                 await ReplyAsync(Sentences.OnlyManage(Context.Guild.Id));
@@ -52,12 +65,24 @@ namespace LaniaV2.Modules
                 await ReplyAsync(Sentences.IsBanned(Context.Guild.Id));
             else
             {
+                ITextChannel chan;
+                if (args.Length > 0)
+                {
+                    chan = await Utils.GetTextChannel(string.Join(" ", args), Context.Guild);
+                    if (chan == null)
+                    {
+                        await ReplyAsync(Sentences.GateUnknown(Context.Guild.Id));
+                        return;
+                    }
+                }
+                else
+                    chan = (ITextChannel)Context.Channel;
                 Core.Guild guild = Program.P.Manager.GetGuild(Context.Guild.Id);
-                if (!guild.DoesGateExist(Context.Channel.Id))
+                if (!guild.DoesGateExist(chan.Id))
                     await ReplyAsync(Sentences.NoGate(Context.Guild.Id));
                 else
                 {
-                    guild.RemoveGate(Context.Channel.Id);
+                    guild.RemoveGate(chan.Id);
                     await ReplyAsync(Sentences.GateClosed(Context.Guild.Id));
                 }
             }
@@ -81,13 +106,14 @@ namespace LaniaV2.Modules
                         ITextChannel chan = await Context.Guild.GetTextChannelAsync(gate.Key);
                         if (chan != null)
                         {
-                            str.AppendLine(Sentences.GateOpenedIn(Context.Guild.Id, chan.Mention, chan.IsNsfw) + "\n");
+                            Program.P.Manager.GetRandomGates(Context.Guild.Id, ((ITextChannel)Context.Channel).IsNsfw, out int readAvailable, out int sendAvailable, out int chanReadAvailable, out int chanSendAvailable);
+                            str.AppendLine(Sentences.GateOpenedIn(Context.Guild.Id, chan.Mention, chan.IsNsfw, readAvailable, sendAvailable, chanReadAvailable, chanSendAvailable));
                         }
                     }
                     if (str.Length == 0)
-                        await ReplyAsync(Sentences.NoGateHere(Context.Guild.Id));
-                    else
-                        await ReplyAsync(str.ToString());
+                        str.AppendLine(Sentences.NoGateHere(Context.Guild.Id));
+                    str.AppendLine("\n" + Sentences.NbGates(Context.Guild.Id, Program.P.Manager.GetNbGates(), Program.P.Manager.GetNbGuilds()));
+                    await ReplyAsync(str.ToString());
                 }
             }
         }

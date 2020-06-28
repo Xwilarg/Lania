@@ -23,6 +23,9 @@ namespace LaniaV2.Core
         public bool HaveAnyGate()
             => _gates.Count > 0;
 
+        public int GetNumberGates()
+            => _gates.Count;
+
         /// <summary>
         /// Get all the guilds we can send messages to
         /// </summary>
@@ -52,10 +55,16 @@ namespace LaniaV2.Core
             => _language;
 
         public void AddGate(ulong chanId)
-            => _gates.Add(chanId, new Gate(id));
+        {
+            _gates.Add(chanId, new Gate(id));
+            Program.P.LaniaDb.UpdateGuild(this);
+        }
 
         public void RemoveGate(ulong chanId)
-            => _gates.Remove(chanId);
+        {
+            _gates.Remove(chanId);
+            Program.P.LaniaDb.UpdateGuild(this);
+        }
 
         public bool CanSend()
             => _lastSent.AddSeconds(secondsBetweenSend).Subtract(DateTime.Now).TotalSeconds < 0;
